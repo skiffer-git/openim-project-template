@@ -36,9 +36,9 @@ type K8sDR struct {
 	gatewayName           string
 }
 
-func NewK8sDiscoveryRegister(gatewayName string) (discovery.SvcDiscoveryRegistry, error) {
+func NewK8sDiscoveryRegister() (discovery.SvcDiscoveryRegistry, error) {
 	gatewayConsistent := consistent.New()
-	gatewayHosts := getMsgGatewayHost(context.Background(), gatewayName)
+	gatewayHosts := getMsgGatewayHost(context.Background(), "messageGateway")
 	for _, v := range gatewayHosts {
 		gatewayConsistent.Add(v)
 	}

@@ -25,7 +25,7 @@ import (
 )
 
 // NewDiscoveryRegister creates a new service discovery and registry client based on the provided environment type.
-func NewDiscoveryRegister(discovery *config.Discovery, share *config.Share) (discovery.SvcDiscoveryRegistry, error) {
+func NewDiscoveryRegister(discovery *config.Discovery) (discovery.SvcDiscoveryRegistry, error) {
 	switch discovery.Enable {
 	case "zookeeper":
 		return zookeeper.NewZkClient(
@@ -37,7 +37,7 @@ func NewDiscoveryRegister(discovery *config.Discovery, share *config.Share) (dis
 			zookeeper.WithTimeout(10),
 		)
 	case "k8s":
-		return kubernetes.NewK8sDiscoveryRegister(share.RpcRegisterName.MessageGateway)
+		return kubernetes.NewK8sDiscoveryRegister()
 	case "etcd":
 		return etcd.NewSvcDiscoveryRegistry(
 			discovery.Etcd.RootDirectory,
