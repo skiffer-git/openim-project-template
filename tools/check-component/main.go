@@ -24,8 +24,6 @@ import (
 	"github.com/openimsdk/tools/db/redisutil"
 	"github.com/openimsdk/tools/discovery/etcd"
 	"github.com/openimsdk/tools/discovery/zookeeper"
-	"github.com/openimsdk/tools/mq/kafka"
-	"github.com/openimsdk/tools/s3/minio"
 	"github.com/openimsdk/tools/system/program"
 	"io/ioutil"
 	"log"
@@ -60,14 +58,6 @@ func CheckRedis(ctx context.Context, config *config.Redis) error {
 	return redisutil.Check(ctx, config.Build())
 }
 
-func CheckMinIO(ctx context.Context, config *config.Minio) error {
-	return minio.Check(ctx, config.Build())
-}
-
-func CheckKafka(ctx context.Context, conf *config.Kafka) error {
-	return kafka.Check(ctx, conf.Build(), []string{conf.ToMongoTopic, conf.ToRedisTopic, conf.ToPushTopic})
-}
-
 func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, *config.Minio, *config.Discovery, error) {
 	var (
 		mongoConfig = &config.Mongo{}
@@ -75,7 +65,6 @@ func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, 
 		kafkaConfig = &config.Kafka{}
 		minioConfig = &config.Minio{}
 		discovery   = &config.Discovery{}
-		thirdConfig = &config.Third{}
 	)
 	err := config.LoadConfig(filepath.Join(configDir, cmd.MongodbConfigFileName), cmd.ConfigEnvPrefixMap[cmd.MongodbConfigFileName], mongoConfig)
 	if err != nil {
@@ -92,19 +81,6 @@ func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Kafka, 
 		return nil, nil, nil, nil, nil, err
 	}
 
-	err = config.LoadConfig(filepath.Join(configDir, cmd.OpenIMRPCThirdCfgFileName), cmd.ConfigEnvPrefixMap[cmd.OpenIMRPCThirdCfgFileName], thirdConfig)
-	if err != nil {
-		return nil, nil, nil, nil, nil, err
-	}
-
-	if thirdConfig.Object.Enable == "minio" {
-		err = config.LoadConfig(filepath.Join(configDir, cmd.MinioConfigFileName), cmd.ConfigEnvPrefixMap[cmd.MinioConfigFileName], minioConfig)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-	} else {
-		minioConfig = nil
-	}
 	err = config.LoadConfig(filepath.Join(configDir, cmd.DiscoveryConfigFilename), cmd.ConfigEnvPrefixMap[cmd.DiscoveryConfigFilename], discovery)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
@@ -146,14 +122,6 @@ func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *
 		"Redis": func(ctx context.Context) error {
 			return CheckRedis(ctx, redisConfig)
 		},
-		"Kafka": func(ctx context.Context) error {
-			return CheckKafka(ctx, kafkaConfig)
-		},
-	}
-	if minioConfig != nil {
-		checks["MinIO"] = func(ctx context.Context) error {
-			return CheckMinIO(ctx, minioConfig)
-		}
 	}
 	if discovery.Enable == "etcd" {
 		checks["Etcd"] = func(ctx context.Context) error {
