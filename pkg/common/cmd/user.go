@@ -18,8 +18,10 @@ import (
 	"context"
 	"github.com/openimsdk/openim-project-template/internal/rpc/user"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
+	"github.com/openimsdk/openim-project-template/pkg/common/prommetrics"
 	"github.com/openimsdk/openim-project-template/pkg/common/startrpc"
 	"github.com/openimsdk/tools/system/program"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 )
 
@@ -55,5 +57,5 @@ func (a *UserRpcCmd) Exec() error {
 func (a *UserRpcCmd) runE() error {
 	return startrpc.Start(a.ctx, &a.userConfig.Discovery, &a.userConfig.Rpc.Prometheus, a.userConfig.Rpc.RPC.ListenIP,
 		a.userConfig.Rpc.RPC.RegisterIP, a.userConfig.Rpc.RPC.Ports,
-		a.Index(), a.userConfig.Share.RpcRegisterName.User, a.userConfig, user.Start, nil)
+		a.Index(), a.userConfig.Share.RpcRegisterName.User, a.userConfig, user.Start, []prometheus.Collector{prommetrics.UserRegisterCounter})
 }
