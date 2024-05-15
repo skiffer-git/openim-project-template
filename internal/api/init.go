@@ -40,6 +40,7 @@ import (
 type Config struct {
 	API       config.API
 	Discovery config.Discovery
+	Share     config.Share
 }
 
 func Start(ctx context.Context, index int, config *Config) error {

@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -49,7 +48,6 @@ func NewMetaCacheRedis(rcClient *rockscache.Client, keys ...string) cache.Meta {
 }
 
 type metaCacheRedis struct {
-	topic         string
 	rcClient      *rockscache.Client
 	keys          []string
 	maxRetryTimes int
@@ -64,17 +62,12 @@ func (m *metaCacheRedis) Copy() cache.Meta {
 		keys = append(keys, m.keys...)
 	}
 	return &metaCacheRedis{
-		topic:         m.topic,
 		rcClient:      m.rcClient,
 		keys:          keys,
 		maxRetryTimes: m.maxRetryTimes,
 		retryInterval: m.retryInterval,
 		redisClient:   m.redisClient,
 	}
-}
-
-func (m *metaCacheRedis) SetTopic(topic string) {
-	m.topic = topic
 }
 
 func (m *metaCacheRedis) SetRawRedisClient(cli redis.UniversalClient) {
@@ -86,7 +79,7 @@ func (m *metaCacheRedis) ExecDel(ctx context.Context, distinct ...bool) error {
 		m.keys = datautil.Distinct(m.keys)
 	}
 	if len(m.keys) > 0 {
-		log.ZDebug(ctx, "delete cache", "topic", m.topic, "keys", m.keys)
+
 		for _, key := range m.keys {
 			for i := 0; i < m.maxRetryTimes; i++ {
 				if err := m.rcClient.TagAsDeleted(key); err != nil {
@@ -95,16 +88,6 @@ func (m *metaCacheRedis) ExecDel(ctx context.Context, distinct ...bool) error {
 					continue
 				}
 				break
-			}
-		}
-		if pk := getPublishKey(m.topic, m.keys); len(pk) > 0 {
-			data, err := json.Marshal(pk)
-			if err != nil {
-				log.ZError(ctx, "keys json marshal failed", err, "topic", m.topic, "keys", pk)
-			} else {
-				if err := m.redisClient.Publish(ctx, m.topic, string(data)).Err(); err != nil {
-					log.ZError(ctx, "redis publish cache delete error", err, "topic", m.topic, "keys", pk)
-				}
 			}
 		}
 	}
@@ -167,30 +150,6 @@ func getCache[T any](ctx context.Context, rcClient *rockscache.Client, key strin
 	}
 
 	return t, nil
-}
-
-func getPublishKey(topic string, key []string) []string {
-	if topic == "" || len(key) == 0 {
-		return nil
-	}
-	prefix, ok := subscribe[topic]
-	if !ok {
-		return nil
-	}
-	res := make([]string, 0, len(key))
-	for _, k := range key {
-		var exist bool
-		for _, p := range prefix {
-			if strings.HasPrefix(k, p) {
-				exist = true
-				break
-			}
-		}
-		if exist {
-			res = append(res, k)
-		}
-	}
-	return res
 }
 
 func batchGetCache2[T any, K comparable](

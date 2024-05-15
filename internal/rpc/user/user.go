@@ -44,18 +44,19 @@ type userServer struct {
 }
 
 type Config struct {
-	RpcConfig     config.User
-	RedisConfig   config.Redis
-	MongodbConfig config.Mongo
-	Discovery     config.Discovery
+	Rpc       config.User
+	Redis     config.Redis
+	Mongo     config.Mongo
+	Discovery config.Discovery
+	Share     config.Share
 }
 
 func Start(ctx context.Context, config *Config, client registry.SvcDiscoveryRegistry, server *grpc.Server) error {
-	mgoCli, err := mongoutil.NewMongoDB(ctx, config.MongodbConfig.Build())
+	mgoCli, err := mongoutil.NewMongoDB(ctx, config.Mongo.Build())
 	if err != nil {
 		return err
 	}
-	rdb, err := redisutil.NewRedisClient(ctx, config.RedisConfig.Build())
+	rdb, err := redisutil.NewRedisClient(ctx, config.Redis.Build())
 	if err != nil {
 		return err
 	}

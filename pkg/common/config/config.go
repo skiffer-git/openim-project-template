@@ -44,6 +44,10 @@ type Mongo struct {
 	MaxRetry    int      `mapstructure:"maxRetry"`
 }
 
+type Share struct {
+	RpcRegisterName RpcRegisterName `mapstructure:"rpcRegisterName"`
+}
+
 type API struct {
 	Api struct {
 		ListenIP string `mapstructure:"listenIP"`
@@ -81,29 +85,7 @@ type Redis struct {
 }
 
 type RpcRegisterName struct {
-	User           string `mapstructure:"user"`
-	Friend         string `mapstructure:"friend"`
-	Msg            string `mapstructure:"msg"`
-	Push           string `mapstructure:"push"`
-	MessageGateway string `mapstructure:"messageGateway"`
-	Group          string `mapstructure:"group"`
-	Auth           string `mapstructure:"auth"`
-	Conversation   string `mapstructure:"conversation"`
-	Third          string `mapstructure:"third"`
-}
-
-func (r *RpcRegisterName) GetServiceNames() []string {
-	return []string{
-		r.User,
-		r.Friend,
-		r.Msg,
-		r.Push,
-		r.MessageGateway,
-		r.Group,
-		r.Auth,
-		r.Conversation,
-		r.Third,
-	}
+	User string `mapstructure:"user"`
 }
 
 type Discovery struct {

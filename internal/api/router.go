@@ -22,7 +22,7 @@ func newGinRouter(disCov discovery.SvcDiscoveryRegistry, config *Config) *gin.En
 	}
 	r.Use(gin.Recovery(), mw.CorsHandler(), mw.GinParseOperationID())
 	// init rpc client here
-	userRpc := rpcclient.NewUser(disCov, "user")
+	userRpc := rpcclient.NewUser(disCov, config.Share.RpcRegisterName.User)
 
 	u := NewUserApi(*userRpc)
 	userRouterGroup := r.Group("/user")

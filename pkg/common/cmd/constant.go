@@ -25,6 +25,7 @@ var (
 	DiscoveryConfigFilename  string
 	OpenIMAPICfgFileName     string
 	LogConfigFileName        string
+	ShareFileName            string
 )
 
 const envPrefix = "IMENV_"
@@ -39,6 +40,7 @@ func init() {
 	OpenIMRPCUserCfgFileName = "openim-rpc-user.yml"
 	DiscoveryConfigFilename = "discovery.yml"
 	LogConfigFileName = "log.yml"
+	ShareFileName = "share.yml"
 
 	ConfigEnvPrefixMap = make(map[string]string)
 	fileNames := []string{
@@ -48,6 +50,7 @@ func init() {
 		DiscoveryConfigFilename,
 		OpenIMAPICfgFileName,
 		LogConfigFileName,
+		ShareFileName,
 	}
 
 	for _, fileName := range fileNames {

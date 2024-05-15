@@ -34,13 +34,10 @@ func NewUserRpcCmd() *UserRpcCmd {
 	var userConfig user.Config
 	ret := &UserRpcCmd{userConfig: &userConfig}
 	ret.configMap = map[string]any{
-		OpenIMRPCUserCfgFileName: &userConfig.RpcConfig,
-		RedisConfigFileName:      &userConfig.RedisConfig,
-		MongodbConfigFileName:    &userConfig.MongodbConfig,
+		OpenIMRPCUserCfgFileName: &userConfig.Rpc,
+		RedisConfigFileName:      &userConfig.Redis,
+		MongodbConfigFileName:    &userConfig.Mongo,
 		ShareFileName:            &userConfig.Share,
-		NotificationFileName:     &userConfig.NotificationConfig,
-		WebhooksConfigFileName:   &userConfig.WebhooksConfig,
-		LocalCacheConfigFileName: &userConfig.LocalCacheConfig,
 		DiscoveryConfigFilename:  &userConfig.Discovery,
 	}
 	ret.RootCmd = NewRootCmd(program.GetProcessName(), WithConfigMap(ret.configMap))
@@ -56,7 +53,7 @@ func (a *UserRpcCmd) Exec() error {
 }
 
 func (a *UserRpcCmd) runE() error {
-	return startrpc.Start(a.ctx, &a.userConfig.Discovery, &a.userConfig.RpcConfig.Prometheus, a.userConfig.RpcConfig.RPC.ListenIP,
-		a.userConfig.RpcConfig.RPC.RegisterIP, a.userConfig.RpcConfig.RPC.Ports,
+	return startrpc.Start(a.ctx, &a.userConfig.Discovery, &a.userConfig.Rpc.Prometheus, a.userConfig.Rpc.RPC.ListenIP,
+		a.userConfig.Rpc.RPC.RegisterIP, a.userConfig.Rpc.RPC.Ports,
 		a.Index(), a.userConfig.Share.RpcRegisterName.User, a.userConfig, user.Start, nil)
 }
