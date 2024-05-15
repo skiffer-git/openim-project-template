@@ -30,10 +30,6 @@ func NewGrpcPromObj(cusMetrics []prometheus.Collector) (*prometheus.Registry, *g
 	return reg, grpcMetrics, nil
 }
 
-func GetGrpcCusMetrics(registerName string) []prometheus.Collector {
-	return nil
-}
-
 func GetGinCusMetrics(name string) []*ginprometheus.Metric {
 	switch name {
 	case "Api":
