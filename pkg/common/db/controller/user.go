@@ -18,11 +18,8 @@ import (
 	"context"
 	"github.com/openimsdk/tools/db/pagination"
 	"github.com/openimsdk/tools/db/tx"
-	"github.com/openimsdk/tools/utils/datautil"
-	"time"
-
-	"github.com/openimsdk/protocol/user"
 	"github.com/openimsdk/tools/errs"
+	"github.com/openimsdk/tools/utils/datautil"
 
 	"github.com/openimsdk/openim-project-template/pkg/common/db/cache"
 	"github.com/openimsdk/openim-project-template/pkg/common/db/table/relation"
@@ -55,29 +52,12 @@ type UserDatabase interface {
 	GetUserByID(ctx context.Context, userID string) (user *relation.UserModel, err error)
 	// InitOnce Inside the function, first query whether it exists in the db, if it exists, do nothing; if it does not exist, insert it
 	InitOnce(ctx context.Context, users []*relation.UserModel) (err error)
-	// CountTotal Get the total number of users
-	CountTotal(ctx context.Context, before *time.Time) (int64, error)
-	// CountRangeEverydayTotal Get the user increment in the range
-	CountRangeEverydayTotal(ctx context.Context, start time.Time, end time.Time) (map[string]int64, error)
 	// SubscribeUsersStatus Subscribe a user's presence status
 	SubscribeUsersStatus(ctx context.Context, userID string, userIDs []string) error
 	// UnsubscribeUsersStatus unsubscribe a user's presence status
 	UnsubscribeUsersStatus(ctx context.Context, userID string, userIDs []string) error
 	// GetAllSubscribeList Get a list of all subscriptions
 	GetAllSubscribeList(ctx context.Context, userID string) ([]string, error)
-	// GetSubscribedList Get all subscribed lists
-	GetSubscribedList(ctx context.Context, userID string) ([]string, error)
-	// GetUserStatus Get the online status of the user
-	GetUserStatus(ctx context.Context, userIDs []string) ([]*user.OnlineStatus, error)
-	// SetUserStatus Set the user status and store the user status in redis
-	SetUserStatus(ctx context.Context, userID string, status, platformID int32) error
-
-	// CRUD user command
-	AddUserCommand(ctx context.Context, userID string, Type int32, UUID string, value string, ex string) error
-	DeleteUserCommand(ctx context.Context, userID string, Type int32, UUID string) error
-	UpdateUserCommand(ctx context.Context, userID string, Type int32, UUID string, val map[string]any) error
-	GetUserCommands(ctx context.Context, userID string, Type int32) ([]*user.CommandInfoResp, error)
-	GetAllUserCommands(ctx context.Context, userID string) ([]*user.AllCommandInfoResp, error)
 }
 
 type userDatabase struct {
@@ -199,16 +179,6 @@ func (u *userDatabase) GetUserByID(ctx context.Context, userID string) (user *re
 	return u.userDB.Take(ctx, userID)
 }
 
-// CountTotal Get the total number of users.
-func (u *userDatabase) CountTotal(ctx context.Context, before *time.Time) (count int64, err error) {
-	return u.userDB.CountTotal(ctx, before)
-}
-
-// CountRangeEverydayTotal Get the user increment in the range.
-func (u *userDatabase) CountRangeEverydayTotal(ctx context.Context, start time.Time, end time.Time) (map[string]int64, error) {
-	return u.userDB.CountRangeEverydayTotal(ctx, start, end)
-}
-
 // SubscribeUsersStatus Subscribe or unsubscribe a user's presence status.
 func (u *userDatabase) SubscribeUsersStatus(ctx context.Context, userID string, userIDs []string) error {
 	err := u.mongoDB.AddSubscriptionList(ctx, userID, userIDs)
@@ -228,46 +198,4 @@ func (u *userDatabase) GetAllSubscribeList(ctx context.Context, userID string) (
 		return nil, err
 	}
 	return list, nil
-}
-
-// GetSubscribedList Get all subscribed lists.
-func (u *userDatabase) GetSubscribedList(ctx context.Context, userID string) ([]string, error) {
-	list, err := u.mongoDB.GetSubscribedList(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	return list, nil
-}
-
-// GetUserStatus get user status.
-func (u *userDatabase) GetUserStatus(ctx context.Context, userIDs []string) ([]*user.OnlineStatus, error) {
-	onlineStatusList, err := u.cache.GetUserStatus(ctx, userIDs)
-	return onlineStatusList, err
-}
-
-// SetUserStatus Set the user status and save it in redis.
-func (u *userDatabase) SetUserStatus(ctx context.Context, userID string, status, platformID int32) error {
-	return u.cache.SetUserStatus(ctx, userID, status, platformID)
-}
-
-func (u *userDatabase) AddUserCommand(ctx context.Context, userID string, Type int32, UUID string, value string, ex string) error {
-	return u.userDB.AddUserCommand(ctx, userID, Type, UUID, value, ex)
-}
-
-func (u *userDatabase) DeleteUserCommand(ctx context.Context, userID string, Type int32, UUID string) error {
-	return u.userDB.DeleteUserCommand(ctx, userID, Type, UUID)
-}
-
-func (u *userDatabase) UpdateUserCommand(ctx context.Context, userID string, Type int32, UUID string, val map[string]any) error {
-	return u.userDB.UpdateUserCommand(ctx, userID, Type, UUID, val)
-}
-
-func (u *userDatabase) GetUserCommands(ctx context.Context, userID string, Type int32) ([]*user.CommandInfoResp, error) {
-	commands, err := u.userDB.GetUserCommand(ctx, userID, Type)
-	return commands, err
-}
-
-func (u *userDatabase) GetAllUserCommands(ctx context.Context, userID string) ([]*user.AllCommandInfoResp, error) {
-	commands, err := u.userDB.GetAllUserCommand(ctx, userID)
-	return commands, err
 }

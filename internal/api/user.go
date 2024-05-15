@@ -16,8 +16,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"github.com/openimsdk/openim-project-template/pkg/rpcclient"
-	"github.com/openimsdk/protocol/user"
 	"github.com/openimsdk/tools/a2r"
 )
 

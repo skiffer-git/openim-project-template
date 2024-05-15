@@ -6,7 +6,7 @@ set "PROTO_NAMES=user"
 
 rem Loop through each element in the array
 for %%i in (%PROTO_NAMES%) do (
-    protoc --go_out=plugins=grpc:./%%i --go_opt=module=github.com/openimsdk/protocol/%%i %%i/%%i.proto
+    protoc --go_out=plugins=grpc:./%%i --go_opt=module=github.com/openimsdk/openim-project-template/pkg/protocol/%%i %%i/%%i.proto
     if ERRORLEVEL 1 (
         echo error processing %%i.proto
         exit /b %ERRORLEVEL%

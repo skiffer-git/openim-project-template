@@ -16,16 +16,14 @@ package rpcclient
 
 import (
 	"context"
-	"strings"
-
-	"github.com/openimsdk/openim-project-template/pkg/authverify"
 	"github.com/openimsdk/openim-project-template/pkg/common/servererrs"
+	"github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"github.com/openimsdk/protocol/sdkws"
-	"github.com/openimsdk/protocol/user"
 	"github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/system/program"
 	"github.com/openimsdk/tools/utils/datautil"
 	"google.golang.org/grpc"
+	"strings"
 )
 
 // User represents a structure holding connection details for the User RPC client.
@@ -67,9 +65,9 @@ func NewUserRpcClient(client discovery.SvcDiscoveryRegistry, rpcRegisterName str
 }
 
 // GetUsersInfo retrieves information for multiple users based on their user IDs.
-func (u *UserRpcClient) GetUsersInfo(ctx context.Context, userIDs []string) ([]*sdkws.UserInfo, error) {
+func (u *UserRpcClient) GetUsersInfo(ctx context.Context, userIDs []string) ([]*user.UserInfo, error) {
 	if len(userIDs) == 0 {
-		return []*sdkws.UserInfo{}, nil
+		return []*user.UserInfo{}, nil
 	}
 	resp, err := u.Client.GetDesignateUsers(ctx, &user.GetDesignateUsersReq{
 		UserIDs: userIDs,
@@ -77,7 +75,7 @@ func (u *UserRpcClient) GetUsersInfo(ctx context.Context, userIDs []string) ([]*
 	if err != nil {
 		return nil, err
 	}
-	if ids := datautil.Single(userIDs, datautil.Slice(resp.UsersInfo, func(e *sdkws.UserInfo) string {
+	if ids := datautil.Single(userIDs, datautil.Slice(resp.UsersInfo, func(e *user.UserInfo) string {
 		return e.UserID
 	})); len(ids) > 0 {
 		return nil, servererrs.ErrUserIDNotFound.WrapMsg(strings.Join(ids, ","))
@@ -86,7 +84,7 @@ func (u *UserRpcClient) GetUsersInfo(ctx context.Context, userIDs []string) ([]*
 }
 
 // GetUserInfo retrieves information for a single user based on the provided user ID.
-func (u *UserRpcClient) GetUserInfo(ctx context.Context, userID string) (*sdkws.UserInfo, error) {
+func (u *UserRpcClient) GetUserInfo(ctx context.Context, userID string) (*user.UserInfo, error) {
 	users, err := u.GetUsersInfo(ctx, []string{userID})
 	if err != nil {
 		return nil, err
@@ -95,12 +93,12 @@ func (u *UserRpcClient) GetUserInfo(ctx context.Context, userID string) (*sdkws.
 }
 
 // GetUsersInfoMap retrieves a map of user information indexed by their user IDs.
-func (u *UserRpcClient) GetUsersInfoMap(ctx context.Context, userIDs []string) (map[string]*sdkws.UserInfo, error) {
+func (u *UserRpcClient) GetUsersInfoMap(ctx context.Context, userIDs []string) (map[string]*user.UserInfo, error) {
 	users, err := u.GetUsersInfo(ctx, userIDs)
 	if err != nil {
 		return nil, err
 	}
-	return datautil.SliceToMap(users, func(e *sdkws.UserInfo) string {
+	return datautil.SliceToMap(users, func(e *user.UserInfo) string {
 		return e.UserID
 	}), nil
 }
@@ -115,7 +113,7 @@ func (u *UserRpcClient) GetPublicUserInfos(
 	if err != nil {
 		return nil, err
 	}
-	return datautil.Slice(users, func(e *sdkws.UserInfo) *sdkws.PublicUserInfo {
+	return datautil.Slice(users, func(e *user.UserInfo) *sdkws.PublicUserInfo {
 		return &sdkws.PublicUserInfo{
 			UserID:   e.UserID,
 			Nickname: e.Nickname,
@@ -147,49 +145,4 @@ func (u *UserRpcClient) GetPublicUserInfoMap(
 	return datautil.SliceToMap(users, func(e *sdkws.PublicUserInfo) string {
 		return e.UserID
 	}), nil
-}
-
-// GetUserGlobalMsgRecvOpt retrieves the global message receive option for a user based on the provided user ID.
-func (u *UserRpcClient) GetUserGlobalMsgRecvOpt(ctx context.Context, userID string) (int32, error) {
-	resp, err := u.Client.GetGlobalRecvMessageOpt(ctx, &user.GetGlobalRecvMessageOptReq{
-		UserID: userID,
-	})
-	if err != nil {
-		return 0, err
-	}
-	return resp.GlobalRecvMsgOpt, nil
-}
-
-// Access verifies the access rights for the provided user ID.
-func (u *UserRpcClient) Access(ctx context.Context, ownerUserID string) error {
-	_, err := u.GetUserInfo(ctx, ownerUserID)
-	if err != nil {
-		return err
-	}
-	return authverify.CheckAccessV3(ctx, ownerUserID, u.imAdminUserID)
-}
-
-// GetAllUserIDs retrieves all user IDs with pagination options.
-func (u *UserRpcClient) GetAllUserIDs(ctx context.Context, pageNumber, showNumber int32) ([]string, error) {
-	resp, err := u.Client.GetAllUserID(ctx, &user.GetAllUserIDReq{Pagination: &sdkws.RequestPagination{PageNumber: pageNumber, ShowNumber: showNumber}})
-	if err != nil {
-		return nil, err
-	}
-	return resp.UserIDs, nil
-}
-
-// SetUserStatus sets the status for a user based on the provided user ID, status, and platform ID.
-func (u *UserRpcClient) SetUserStatus(ctx context.Context, userID string, status int32, platformID int) error {
-	_, err := u.Client.SetUserStatus(ctx, &user.SetUserStatusReq{
-		UserID: userID,
-		Status: status, PlatformID: int32(platformID),
-	})
-	return err
-}
-
-func (u *UserRpcClient) GetNotificationByID(ctx context.Context, userID string) error {
-	_, err := u.Client.GetNotificationAccount(ctx, &user.GetNotificationAccountReq{
-		UserID: userID,
-	})
-	return err
 }

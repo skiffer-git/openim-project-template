@@ -15,6 +15,7 @@
 package convert
 
 import (
+	"github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"reflect"
 	"testing"
 
@@ -45,7 +46,7 @@ func TestUsersDB2Pb(t *testing.T) {
 
 func TestUserPb2DB(t *testing.T) {
 	type args struct {
-		user *sdkws.UserInfo
+		user *user.UserInfo
 	}
 	tests := []struct {
 		name string

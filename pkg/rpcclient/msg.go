@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
+	"github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/protocol/msg"
 	"github.com/openimsdk/protocol/sdkws"
@@ -221,7 +222,7 @@ type NotificationSender struct {
 	contentTypeConf map[int32]config.NotificationConfig
 	sessionTypeConf map[int32]int32
 	sendMsg         func(ctx context.Context, req *msg.SendMsgReq) (*msg.SendMsgResp, error)
-	getUserInfo     func(ctx context.Context, userID string) (*sdkws.UserInfo, error)
+	getUserInfo     func(ctx context.Context, userID string) (*user.UserInfo, error)
 	queue           *memamq.MemoryQueue
 }
 
@@ -295,7 +296,7 @@ func (s *NotificationSender) send(ctx context.Context, sendID, recvID string, co
 	}
 	var req msg.SendMsgReq
 	var msg sdkws.MsgData
-	var userInfo *sdkws.UserInfo
+	var userInfo *user.UserInfo
 	if notificationOpt.WithRpcGetUsername && s.getUserInfo != nil {
 		userInfo, err = s.getUserInfo(ctx, sendID)
 		if err != nil {
