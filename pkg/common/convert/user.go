@@ -15,14 +15,11 @@
 package convert
 
 import (
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 	pbuser "github.com/openimsdk/openim-project-template/pkg/protocol/user"
-	"time"
-
-	relationtb "github.com/openimsdk/openim-project-template/pkg/common/db/table/relation"
-	"github.com/openimsdk/protocol/sdkws"
 )
 
-func UsersDB2Pb(users []*relationtb.UserModel) []*pbuser.UserInfo {
+func UsersDB2Pb(users []*model.User) []*pbuser.UserInfo {
 	result := make([]*pbuser.UserInfo, 0, len(users))
 	for _, user := range users {
 		userPb := &pbuser.UserInfo{
@@ -37,60 +34,4 @@ func UsersDB2Pb(users []*relationtb.UserModel) []*pbuser.UserInfo {
 		result = append(result, userPb)
 	}
 	return result
-}
-
-func UserPb2DB(user *pbuser.UserInfo) *relationtb.UserModel {
-	return &relationtb.UserModel{
-		UserID:           user.UserID,
-		Nickname:         user.Nickname,
-		FaceURL:          user.FaceURL,
-		Ex:               user.Ex,
-		CreateTime:       time.UnixMilli(user.CreateTime),
-		AppMangerLevel:   user.AppMangerLevel,
-		GlobalRecvMsgOpt: user.GlobalRecvMsgOpt,
-	}
-}
-
-func UserPb2DBMap(user *sdkws.UserInfo) map[string]any {
-	if user == nil {
-		return nil
-	}
-	val := make(map[string]any)
-	fields := map[string]any{
-		"nickname":            user.Nickname,
-		"face_url":            user.FaceURL,
-		"ex":                  user.Ex,
-		"app_manager_level":   user.AppMangerLevel,
-		"global_recv_msg_opt": user.GlobalRecvMsgOpt,
-	}
-	for key, value := range fields {
-		if v, ok := value.(string); ok && v != "" {
-			val[key] = v
-		} else if v, ok := value.(int32); ok && v != 0 {
-			val[key] = v
-		}
-	}
-	return val
-}
-func UserPb2DBMapEx(user *sdkws.UserInfoWithEx) map[string]any {
-	if user == nil {
-		return nil
-	}
-	val := make(map[string]any)
-
-	// Map fields from UserInfoWithEx to val
-	if user.Nickname != nil {
-		val["nickname"] = user.Nickname.Value
-	}
-	if user.FaceURL != nil {
-		val["face_url"] = user.FaceURL.Value
-	}
-	if user.Ex != nil {
-		val["ex"] = user.Ex.Value
-	}
-	if user.GlobalRecvMsgOpt != nil {
-		val["global_recv_msg_opt"] = user.GlobalRecvMsgOpt.Value
-	}
-
-	return val
 }

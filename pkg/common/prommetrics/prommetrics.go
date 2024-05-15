@@ -16,7 +16,6 @@ package prommetrics
 
 import (
 	gp "github.com/grpc-ecosystem/go-grpc-prometheus"
-	config2 "github.com/openimsdk/openim-project-template/pkg/common/config"
 	"github.com/openimsdk/openim-project-template/pkg/common/ginprometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -31,21 +30,8 @@ func NewGrpcPromObj(cusMetrics []prometheus.Collector) (*prometheus.Registry, *g
 	return reg, grpcMetrics, nil
 }
 
-func GetGrpcCusMetrics(registerName string, share *config2.Share) []prometheus.Collector {
-	switch registerName {
-	case share.RpcRegisterName.MessageGateway:
-		return []prometheus.Collector{OnlineUserGauge}
-	case share.RpcRegisterName.Msg:
-		return []prometheus.Collector{SingleChatMsgProcessSuccessCounter, SingleChatMsgProcessFailedCounter, GroupChatMsgProcessSuccessCounter, GroupChatMsgProcessFailedCounter}
-	case "Transfer":
-		return []prometheus.Collector{MsgInsertRedisSuccessCounter, MsgInsertRedisFailedCounter, MsgInsertMongoSuccessCounter, MsgInsertMongoFailedCounter, SeqSetFailedCounter}
-	case share.RpcRegisterName.Push:
-		return []prometheus.Collector{MsgOfflinePushFailedCounter}
-	case share.RpcRegisterName.Auth:
-		return []prometheus.Collector{UserLoginCounter}
-	default:
-		return nil
-	}
+func GetGrpcCusMetrics(registerName string) []prometheus.Collector {
+	return nil
 }
 
 func GetGinCusMetrics(name string) []*ginprometheus.Metric {

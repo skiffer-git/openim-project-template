@@ -37,10 +37,6 @@ func NewUserRpcCmd() *UserRpcCmd {
 		OpenIMRPCUserCfgFileName: &userConfig.RpcConfig,
 		RedisConfigFileName:      &userConfig.RedisConfig,
 		MongodbConfigFileName:    &userConfig.MongodbConfig,
-		ShareFileName:            &userConfig.Share,
-		NotificationFileName:     &userConfig.NotificationConfig,
-		WebhooksConfigFileName:   &userConfig.WebhooksConfig,
-		LocalCacheConfigFileName: &userConfig.LocalCacheConfig,
 		DiscoveryConfigFilename:  &userConfig.Discovery,
 	}
 	ret.RootCmd = NewRootCmd(program.GetProcessName(), WithConfigMap(ret.configMap))
@@ -58,5 +54,5 @@ func (a *UserRpcCmd) Exec() error {
 func (a *UserRpcCmd) runE() error {
 	return startrpc.Start(a.ctx, &a.userConfig.Discovery, &a.userConfig.RpcConfig.Prometheus, a.userConfig.RpcConfig.RPC.ListenIP,
 		a.userConfig.RpcConfig.RPC.RegisterIP, a.userConfig.RpcConfig.RPC.Ports,
-		a.Index(), a.userConfig.Share.RpcRegisterName.User, &a.userConfig.Share, a.userConfig, user.Start)
+		a.Index(), "user", a.userConfig, user.Start)
 }

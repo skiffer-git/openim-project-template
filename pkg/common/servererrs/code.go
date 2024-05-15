@@ -42,54 +42,16 @@ const (
 	NetworkError  = 90004 // Network error
 	DataError     = 90007 // Data error
 
-	CallbackError = 80000
-
 	// General error codes.
 	ServerInternalError = 500  // Server internal error
 	ArgsError           = 1001 // Input parameter error
-	NoPermissionError   = 1002 // Insufficient permission
-	DuplicateKeyError   = 1003
-	RecordNotFoundError = 1004 // Record does not exist
 
 	// Account error codes.
 	UserIDNotFoundError    = 1101 // UserID does not exist or is not registered
 	RegisteredAlreadyError = 1102 // user is already registered
 
 	// Group error codes.
-	GroupIDNotFoundError  = 1201 // GroupID does not exist
-	GroupIDExisted        = 1202 // GroupID already exists
-	NotInGroupYetError    = 1203 // Not in the group yet
-	DismissedAlreadyError = 1204 // Group has already been dismissed
-	GroupTypeNotSupport   = 1205
-	GroupRequestHandled   = 1206
+	GroupIDNotFoundError = 1201 // GroupID does not exist
+	GroupIDExisted       = 1202 // GroupID already exists
 
-	// Relationship error codes.
-	CanNotAddYourselfError   = 1301 // Cannot add yourself as a friend
-	BlockedByPeer            = 1302 // Blocked by the peer
-	NotPeersFriend           = 1303 // Not the peer's friend
-	RelationshipAlreadyError = 1304 // Already in a friend relationship
-
-	// Message error codes.
-	MessageHasReadDisable = 1401
-	MutedInGroup          = 1402 // Member muted in the group
-	MutedGroup            = 1403 // Group is muted
-	MsgAlreadyRevoke      = 1404 // Message already revoked
-
-	// Token error codes.
-	TokenExpiredError     = 1501
-	TokenInvalidError     = 1502
-	TokenMalformedError   = 1503
-	TokenNotValidYetError = 1504
-	TokenUnknownError     = 1505
-	TokenKickedError      = 1506
-	TokenNotExistError    = 1507
-
-	// Long connection gateway error codes.
-	ConnOverMaxNumLimit  = 1601
-	ConnArgsErr          = 1602
-	PushMsgErr           = 1603
-	IOSBackgroundPushErr = 1604
-
-	// S3 error codes.
-	FileUploadedExpiredError = 1701 // Upload expired
 )

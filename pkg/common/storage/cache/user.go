@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package cache
 
 import (
-	"github.com/go-playground/validator/v10"
+	"context"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 )
 
-// RequiredIf validates if the specified field is required based on the session type.
-func RequiredIf(fl validator.FieldLevel) bool {
-	return true
+type User interface {
+	Meta
+	NewCache() User
+	GetUsersInfo(ctx context.Context, userIDs []string) ([]*model.User, error)
+	DelUsersInfo(userIDs ...string) User
 }

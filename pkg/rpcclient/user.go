@@ -28,25 +28,21 @@ import (
 
 // User represents a structure holding connection details for the User RPC client.
 type User struct {
-	conn                  grpc.ClientConnInterface
-	Client                user.UserClient
-	Discov                discovery.SvcDiscoveryRegistry
-	MessageGateWayRpcName string
-	imAdminUserID         []string
+	conn   grpc.ClientConnInterface
+	Client user.UserClient
+	Discov discovery.SvcDiscoveryRegistry
 }
 
 // NewUser initializes and returns a User instance based on the provided service discovery registry.
-func NewUser(discov discovery.SvcDiscoveryRegistry, rpcRegisterName, messageGateWayRpcName string,
-	imAdminUserID []string) *User {
+func NewUser(discov discovery.SvcDiscoveryRegistry, rpcRegisterName string) *User {
 	conn, err := discov.GetConn(context.Background(), rpcRegisterName)
 	if err != nil {
 		program.ExitWithError(err)
 	}
 	client := user.NewUserClient(conn)
 	return &User{Discov: discov, Client: client,
-		conn:                  conn,
-		MessageGateWayRpcName: messageGateWayRpcName,
-		imAdminUserID:         imAdminUserID}
+		conn: conn,
+	}
 }
 
 // UserRpcClient represents the structure for a User RPC client.
@@ -61,7 +57,7 @@ func NewUserRpcClientByUser(user *User) *UserRpcClient {
 // NewUserRpcClient initializes a UserRpcClient based on the provided service discovery registry.
 func NewUserRpcClient(client discovery.SvcDiscoveryRegistry, rpcRegisterName string,
 	imAdminUserID []string) UserRpcClient {
-	return UserRpcClient(*NewUser(client, rpcRegisterName, "", imAdminUserID))
+	return UserRpcClient(*NewUser(client, rpcRegisterName))
 }
 
 // GetUsersInfo retrieves information for multiple users based on their user IDs.

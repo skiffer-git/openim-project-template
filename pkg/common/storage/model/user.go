@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package model
 
 import (
-	"github.com/go-playground/validator/v10"
+	"time"
 )
 
-// RequiredIf validates if the specified field is required based on the session type.
-func RequiredIf(fl validator.FieldLevel) bool {
-	return true
+type User struct {
+	UserID           string    `bson:"user_id"`
+	Nickname         string    `bson:"nickname"`
+	FaceURL          string    `bson:"face_url"`
+	Ex               string    `bson:"ex"`
+	AppMangerLevel   int32     `bson:"app_manger_level"`
+	GlobalRecvMsgOpt int32     `bson:"global_recv_msg_opt"`
+	CreateTime       time.Time `bson:"create_time"`
 }

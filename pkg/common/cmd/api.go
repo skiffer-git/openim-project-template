@@ -34,7 +34,6 @@ func NewApiCmd() *ApiCmd {
 	ret := &ApiCmd{apiConfig: &apiConfig}
 	ret.configMap = map[string]any{
 		OpenIMAPICfgFileName:    &apiConfig.API,
-		ShareFileName:           &apiConfig.Share,
 		DiscoveryConfigFilename: &apiConfig.Discovery,
 	}
 	ret.RootCmd = NewRootCmd(program.GetProcessName(), WithConfigMap(ret.configMap))

@@ -1,4 +1,4 @@
-// Copyright © 2023 OpenIM. All rights reserved.
+// Copyright © 2024 OpenIM. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
-
-import (
-	"github.com/go-playground/validator/v10"
-)
-
-// RequiredIf validates if the specified field is required based on the session type.
-func RequiredIf(fl validator.FieldLevel) bool {
-	return true
-}
+package cache // import "github.com/openimsdk/openim-project-template/pkg/common/storage/cache"

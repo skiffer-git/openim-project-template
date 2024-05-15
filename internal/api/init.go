@@ -39,7 +39,6 @@ import (
 
 type Config struct {
 	API       config.API
-	Share     config.Share
 	Discovery config.Discovery
 }
 
@@ -56,7 +55,7 @@ func Start(ctx context.Context, index int, config *Config) error {
 	var client discovery.SvcDiscoveryRegistry
 
 	// Determine whether zk is passed according to whether it is a clustered deployment
-	client, err = kdisc.NewDiscoveryRegister(&config.Discovery, &config.Share)
+	client, err = kdisc.NewDiscoveryRegister(&config.Discovery)
 	if err != nil {
 		return errs.WrapMsg(err, "failed to register discovery service")
 	}

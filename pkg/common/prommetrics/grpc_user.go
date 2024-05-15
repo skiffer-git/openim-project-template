@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package prommetrics
 
 import (
-	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
-// RequiredIf validates if the specified field is required based on the session type.
-func RequiredIf(fl validator.FieldLevel) bool {
-	return true
-}
+var (
+	UserRegisterCounter = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "user_register_total",
+		Help: "user register total",
+	})
+)

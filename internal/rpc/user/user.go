@@ -17,52 +17,41 @@ package user
 import (
 	"context"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
-	"github.com/openimsdk/openim-project-template/pkg/common/webhook"
+	"github.com/openimsdk/openim-project-template/pkg/common/prommetrics"
+	mgo2 "github.com/openimsdk/openim-project-template/pkg/common/storage/database/mgo"
 	"github.com/openimsdk/tools/db/redisutil"
+
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 
 	"strings"
 	"time"
 
 	"github.com/openimsdk/openim-project-template/pkg/common/convert"
-	"github.com/openimsdk/openim-project-template/pkg/common/db/cache"
-	"github.com/openimsdk/openim-project-template/pkg/common/db/controller"
-	"github.com/openimsdk/openim-project-template/pkg/common/db/mgo"
-	tablerelation "github.com/openimsdk/openim-project-template/pkg/common/db/table/relation"
-	"github.com/openimsdk/openim-project-template/pkg/common/servererrs"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache/redis"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/controller"
 	pbuser "github.com/openimsdk/openim-project-template/pkg/protocol/user"
-	"github.com/openimsdk/openim-project-template/pkg/rpcclient"
-	"github.com/openimsdk/protocol/constant"
 	"github.com/openimsdk/tools/db/mongoutil"
 	registry "github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/errs"
-	"github.com/openimsdk/tools/log"
 	"github.com/openimsdk/tools/utils/datautil"
 	"google.golang.org/grpc"
 )
 
 type userServer struct {
-	db                     controller.UserDatabase
-	userNotificationSender *UserNotificationSender
-	friendRpcClient        *rpcclient.FriendRpcClient
-	groupRpcClient         *rpcclient.GroupRpcClient
-	RegisterCenter         registry.SvcDiscoveryRegistry
-	config                 *Config
-	webhookClient          *webhook.Client
+	userStorageHandler controller.User
+	RegisterCenter     registry.SvcDiscoveryRegistry
+	config             *Config
 }
 
 type Config struct {
-	RpcConfig          config.User
-	RedisConfig        config.Redis
-	MongodbConfig      config.Mongo
-	NotificationConfig config.Notification
-	Share              config.Share
-	WebhooksConfig     config.Webhooks
-	LocalCacheConfig   config.LocalCache
-	Discovery          config.Discovery
+	RpcConfig     config.User
+	RedisConfig   config.Redis
+	MongodbConfig config.Mongo
+	Discovery     config.Discovery
 }
 
 func Start(ctx context.Context, config *Config, client registry.SvcDiscoveryRegistry, server *grpc.Server) error {
-	mgocli, err := mongoutil.NewMongoDB(ctx, config.MongodbConfig.Build())
+	mgoCli, err := mongoutil.NewMongoDB(ctx, config.MongodbConfig.Build())
 	if err != nil {
 		return err
 	}
@@ -70,41 +59,29 @@ func Start(ctx context.Context, config *Config, client registry.SvcDiscoveryRegi
 	if err != nil {
 		return err
 	}
-	users := make([]*tablerelation.UserModel, 0)
 
-	for _, v := range config.Share.IMAdminUserID {
-		users = append(users, &tablerelation.UserModel{UserID: v, Nickname: v, AppMangerLevel: constant.AppNotificationAdmin})
-	}
-	userDB, err := mgo.NewUserMongo(mgocli.GetDB())
+	userDB, err := mgo2.NewUserMongo(mgoCli.GetDB())
 	if err != nil {
 		return err
 	}
-	userCache := cache.NewUserCacheRedis(rdb, &config.LocalCacheConfig, userDB, cache.GetDefaultOpt())
-	userMongoDB := mgo.NewUserMongoDriver(mgocli.GetDB())
-	database := controller.NewUserDatabase(userDB, userCache, mgocli.GetTx(), userMongoDB)
-	friendRpcClient := rpcclient.NewFriendRpcClient(client, config.Share.RpcRegisterName.Friend)
-	groupRpcClient := rpcclient.NewGroupRpcClient(client, config.Share.RpcRegisterName.Group)
-	msgRpcClient := rpcclient.NewMessageRpcClient(client, config.Share.RpcRegisterName.Msg)
-	cache.InitLocalCache(&config.LocalCacheConfig)
+	userCache := redis.NewUser(rdb, userDB, redis.GetDefaultOpt())
+	database := controller.NewUser(userDB, userCache, mgoCli.GetTx())
 	u := &userServer{
-		db:                     database,
-		RegisterCenter:         client,
-		friendRpcClient:        &friendRpcClient,
-		groupRpcClient:         &groupRpcClient,
-		userNotificationSender: NewUserNotificationSender(config, &msgRpcClient, WithUserFunc(database.FindWithError)),
-		config:                 config,
-		webhookClient:          webhook.NewWebhookClient(config.WebhooksConfig.URL),
+		userStorageHandler: database,
+		RegisterCenter:     client,
+		config:             config,
 	}
 	pbuser.RegisterUserServer(server, u)
-	return u.db.InitOnce(context.Background(), users)
+	return nil
 }
 
 func (s *userServer) GetDesignateUsers(ctx context.Context, req *pbuser.GetDesignateUsersReq) (resp *pbuser.GetDesignateUsersResp, err error) {
 	resp = &pbuser.GetDesignateUsersResp{}
-	users, err := s.db.FindWithError(ctx, req.UserIDs)
+	users, err := s.userStorageHandler.FindWithError(ctx, req.UserIDs)
 	if err != nil {
 		return nil, err
 	}
+
 	resp.UsersInfo = convert.UsersDB2Pb(users)
 	return resp, nil
 }
@@ -114,10 +91,7 @@ func (s *userServer) UserRegister(ctx context.Context, req *pbuser.UserRegisterR
 	if len(req.Users) == 0 {
 		return nil, errs.ErrArgs.WrapMsg("users is empty")
 	}
-	if req.Secret != s.config.Share.Secret {
-		log.ZDebug(ctx, "UserRegister", s.config.Share.Secret, req.Secret)
-		return nil, errs.ErrNoPermission.WrapMsg("secret invalid")
-	}
+
 	if datautil.DuplicateAny(req.Users, func(e *pbuser.UserInfo) string { return e.UserID }) {
 		return nil, errs.ErrArgs.WrapMsg("userID repeated")
 	}
@@ -131,20 +105,11 @@ func (s *userServer) UserRegister(ctx context.Context, req *pbuser.UserRegisterR
 		}
 		userIDs = append(userIDs, user.UserID)
 	}
-	exist, err := s.db.IsExist(ctx, userIDs)
-	if err != nil {
-		return nil, err
-	}
-	if exist {
-		return nil, servererrs.ErrRegisteredAlready.WrapMsg("userID registered already")
-	}
-	if err := s.webhookBeforeUserRegister(ctx, &s.config.WebhooksConfig.BeforeUserRegister, req); err != nil {
-		return nil, err
-	}
+
 	now := time.Now()
-	users := make([]*tablerelation.UserModel, 0, len(req.Users))
+	users := make([]*model.User, 0, len(req.Users))
 	for _, user := range req.Users {
-		users = append(users, &tablerelation.UserModel{
+		users = append(users, &model.User{
 			UserID:           user.UserID,
 			Nickname:         user.Nickname,
 			FaceURL:          user.FaceURL,
@@ -154,10 +119,11 @@ func (s *userServer) UserRegister(ctx context.Context, req *pbuser.UserRegisterR
 			GlobalRecvMsgOpt: user.GlobalRecvMsgOpt,
 		})
 	}
-	if err := s.db.Create(ctx, users); err != nil {
+	if err := s.userStorageHandler.Create(ctx, users); err != nil {
 		return nil, err
 	}
 
-	s.webhookAfterUserRegister(ctx, &s.config.WebhooksConfig.AfterUserRegister, req)
+	prommetrics.UserRegisterCounter.Inc()
+
 	return resp, nil
 }
