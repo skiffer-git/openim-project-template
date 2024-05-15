@@ -66,21 +66,6 @@ func (u *UserLocalCache) GetUserInfo(ctx context.Context, userID string) (val *s
 	}))
 }
 
-func (u *UserLocalCache) GetUserGlobalMsgRecvOpt(ctx context.Context, userID string) (val int32, err error) {
-	log.ZDebug(ctx, "UserLocalCache GetUserGlobalMsgRecvOpt req", "userID", userID)
-	defer func() {
-		if err == nil {
-			log.ZDebug(ctx, "UserLocalCache GetUserGlobalMsgRecvOpt return", "value", val)
-		} else {
-			log.ZError(ctx, "UserLocalCache GetUserGlobalMsgRecvOpt return", err)
-		}
-	}()
-	return localcache.AnyValue[int32](u.local.Get(ctx, cachekey.GetUserGlobalRecvMsgOptKey(userID), func(ctx context.Context) (any, error) {
-		log.ZDebug(ctx, "UserLocalCache GetUserGlobalMsgRecvOpt rpc", "userID", userID)
-		return u.client.GetUserGlobalMsgRecvOpt(ctx, userID)
-	}))
-}
-
 func (u *UserLocalCache) GetUsersInfo(ctx context.Context, userIDs []string) ([]*sdkws.UserInfo, error) {
 	users := make([]*sdkws.UserInfo, 0, len(userIDs))
 	for _, userID := range userIDs {
