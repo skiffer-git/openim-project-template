@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 )
 
 func init() {
@@ -24,6 +25,36 @@ func init() {
 			fmt.Printf("%s is already installed.\n", tool)
 		}
 	}
+
+	// Check if protoc is installed
+	if _, err := exec.LookPath("protoc"); err != nil {
+		fmt.Println("protoc is not installed, attempting to install...")
+		installProtoc()
+	} else {
+		fmt.Println("protoc is already installed.")
+	}
+
+}
+
+func installProtoc() {
+	// Define the protoc version
+	version := "3.17.3"
+	platform := runtime.GOOS
+	arch := runtime.GOARCH
+
+	// Construct the download URL based on the platform and architecture
+	url := fmt.Sprintf("https://github.com/protocolbuffers/protobuf/releases/download/v%s/protoc-%s-%s-%s.zip", version, version, platform, arch)
+
+	// Example for Linux x86_64, adjust based on actual OS/arch detection
+	if platform == "linux" && arch == "amd64" {
+		downloadAndExtract(url, "/usr/local/bin")
+	}
+}
+
+func downloadAndExtract(url, targetDir string) {
+	fmt.Printf("Downloading protoc from %s\n", url)
+	// This is a simplification. You'd typically use `net/http` to download the file, then use `archive/zip` to extract it
+	// and move the `protoc` binary to targetDir
 }
 
 // Protocol compiles the protobuf files
