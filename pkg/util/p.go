@@ -90,7 +90,7 @@ func installProtoc() error {
 
 	// Unzip the file to /usr/local/bin (you might want to change this based on your OS)
 	// This requires admin privileges, consider where to unzip based on your user privileges
-	if err := sh.Run("unzip", tmpFile.Name(), "-d", "/usr/local/bin"); err != nil {
+	if err := sh.Run("unzip", tmpFile.Name(), "-d", "/usr/local"); err != nil {
 		return err
 	}
 
