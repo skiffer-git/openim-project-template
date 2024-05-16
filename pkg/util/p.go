@@ -13,16 +13,22 @@ import (
 
 func ensureToolsInstalled() {
 	tools := map[string]string{
-		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go",
-		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc",
+		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
+		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
 	}
-	targetDir := "/usr/local/bin" // 指定安装目录
+	gopathBin := filepath.Join(os.Getenv("GOPATH"), "bin")
+	targetDir := "/usr/local/bin"
+
 	for tool, path := range tools {
-		targetPath := filepath.Join(targetDir, tool)
-		if _, err := exec.LookPath(targetPath); err != nil {
-			fmt.Printf("Building and installing %s...\n", tool)
-			if err := goBuildInstall(path, tool, targetDir); err != nil {
+		toolPath := filepath.Join(gopathBin, tool)
+		if _, err := exec.LookPath(toolPath); err != nil {
+			fmt.Printf("Installing %s...\n", tool)
+			if err := sh.Run("go", "install", path); err != nil {
 				fmt.Printf("Failed to install %s: %s\n", tool, err)
+				os.Exit(1)
+			}
+			if err := os.Rename(toolPath, filepath.Join(targetDir, tool)); err != nil {
+				fmt.Printf("Failed to move %s to %s: %s\n", tool, targetDir, err)
 				os.Exit(1)
 			}
 		} else {
