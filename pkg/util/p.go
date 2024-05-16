@@ -9,9 +9,7 @@ import (
 )
 
 func init() {
-	//  protoc, protoc-gen-go 和 protoc-gen-go-grpc
 	tools := map[string]string{
-		"protoc":             "protoc",
 		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
 		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
 	}
