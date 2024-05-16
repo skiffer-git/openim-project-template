@@ -16,23 +16,19 @@ func ensureToolsInstalled() {
 		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
 		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
 	}
-	gopathBin := filepath.Join(os.Getenv("GOPATH"), "bin")
 	targetDir := "/usr/local/bin"
 
+	os.Setenv("GOBIN", targetDir)
+
 	for tool, path := range tools {
-		toolPath := filepath.Join(gopathBin, tool)
-		if _, err := exec.LookPath(toolPath); err != nil {
-			fmt.Printf("Installing %s...\n", tool)
+		if _, err := exec.LookPath(filepath.Join(targetDir, tool)); err != nil {
+			fmt.Printf("Installing %s to %s...\n", tool, targetDir)
 			if err := sh.Run("go", "install", path); err != nil {
 				fmt.Printf("Failed to install %s: %s\n", tool, err)
 				os.Exit(1)
 			}
-			if err := os.Rename(toolPath, filepath.Join(targetDir, tool)); err != nil {
-				fmt.Printf("Failed to move %s to %s: %s\n", tool, targetDir, err)
-				os.Exit(1)
-			}
 		} else {
-			fmt.Printf("%s is already installed.\n", tool)
+			fmt.Printf("%s is already installed in %s.\n", tool, targetDir)
 		}
 	}
 
