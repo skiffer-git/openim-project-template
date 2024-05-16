@@ -52,6 +52,7 @@ func installProtoc() error {
 	fileName := fmt.Sprintf("protoc-%s-%s.zip", version, osArch)
 	url := baseURL + "/" + fileName
 
+	fmt.Println("download ", url)
 	// Download the file
 	resp, err := http.Get(url)
 	if err != nil {
