@@ -23,13 +23,8 @@ func UsersDB2Pb(users []*model.User) []*pbuser.UserInfo {
 	result := make([]*pbuser.UserInfo, 0, len(users))
 	for _, user := range users {
 		userPb := &pbuser.UserInfo{
-			UserID:           user.UserID,
-			Nickname:         user.Nickname,
-			FaceURL:          user.FaceURL,
-			Ex:               user.Ex,
-			CreateTime:       user.CreateTime.UnixMilli(),
-			AppMangerLevel:   user.AppMangerLevel,
-			GlobalRecvMsgOpt: user.GlobalRecvMsgOpt,
+			UserID:   user.UserID,
+			Nickname: user.Nickname,
 		}
 		result = append(result, userPb)
 	}

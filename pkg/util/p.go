@@ -132,12 +132,16 @@ func getProtocArch(archMap map[string]string, goArch string) string {
 	return goArch
 }
 
-// Protocol compiles the protobuf files.
 func Protocol() error {
 	if err := ensureToolsInstalled(); err != nil {
 		fmt.Println("error ", err.Error())
 		os.Exit(1)
+	}
 
+	moduleName, err := getModuleNameFromGoMod()
+	if err != nil {
+		fmt.Println("error fetching module name from go.mod: ", err.Error())
+		os.Exit(1)
 	}
 
 	protoPath := "./pkg/protocol"
@@ -149,7 +153,7 @@ func Protocol() error {
 
 	for _, dir := range dirs {
 		if dir.IsDir() {
-			if err := compileProtoFiles(protoPath, dir.Name()); err != nil {
+			if err := compileProtoFiles(protoPath, dir.Name(), moduleName); err != nil {
 				fmt.Println("error ", err.Error())
 				os.Exit(1)
 			}
@@ -157,11 +161,10 @@ func Protocol() error {
 	}
 	return nil
 }
-
-func compileProtoFiles(basePath, dirName string) error {
+func compileProtoFiles(basePath, dirName, moduleName string) error {
 	protoFile := filepath.Join(basePath, dirName, dirName+".proto")
 	outputDir := filepath.Join(basePath, dirName)
-	module := "github.com/openimsdk/openim-project-template/pkg/protocol/" + dirName
+	module := moduleName + "/pkg/protocol/" + dirName
 	args := []string{
 		"--go_out=plugins=grpc:" + outputDir,
 		"--go_opt=module=" + module,
@@ -172,7 +175,6 @@ func compileProtoFiles(basePath, dirName string) error {
 		return fmt.Errorf("failed to compile %s: %s", protoFile, err)
 	}
 	return fixOmitemptyInDirectory(outputDir)
-
 }
 
 func fixOmitemptyInDirectory(dir string) error {
@@ -226,4 +228,28 @@ func writeLines(lines []string, path string) error {
 		}
 	}
 	return w.Flush()
+}
+
+// getModuleNameFromGoMod extracts the module name from go.mod file.
+func getModuleNameFromGoMod() (string, error) {
+	file, err := os.Open("go.mod")
+	if err != nil {
+		return "", fmt.Errorf("failed to open go.mod: %v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "module ") {
+			// Assuming line looks like "module github.com/user/repo"
+			return strings.TrimSpace(strings.TrimPrefix(line, "module")), nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("error reading go.mod: %v", err)
+	}
+
+	return "", fmt.Errorf("module directive not found in go.mod")
 }

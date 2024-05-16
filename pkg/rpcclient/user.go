@@ -113,8 +113,6 @@ func (u *UserRpcClient) GetPublicUserInfos(
 		return &sdkws.PublicUserInfo{
 			UserID:   e.UserID,
 			Nickname: e.Nickname,
-			FaceURL:  e.FaceURL,
-			Ex:       e.Ex,
 		}
 	}), nil
 }

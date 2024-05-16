@@ -23,9 +23,6 @@ import (
 
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 
-	"strings"
-	"time"
-
 	"github.com/openimsdk/openim-project-template/pkg/common/convert"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache/redis"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/controller"
@@ -35,6 +32,7 @@ import (
 	"github.com/openimsdk/tools/errs"
 	"github.com/openimsdk/tools/utils/datautil"
 	"google.golang.org/grpc"
+	"strings"
 )
 
 type userServer struct {
@@ -106,18 +104,11 @@ func (s *userServer) UserRegister(ctx context.Context, req *pbuser.UserRegisterR
 		}
 		userIDs = append(userIDs, user.UserID)
 	}
-
-	now := time.Now()
 	users := make([]*model.User, 0, len(req.Users))
 	for _, user := range req.Users {
 		users = append(users, &model.User{
-			UserID:           user.UserID,
-			Nickname:         user.Nickname,
-			FaceURL:          user.FaceURL,
-			Ex:               user.Ex,
-			CreateTime:       now,
-			AppMangerLevel:   user.AppMangerLevel,
-			GlobalRecvMsgOpt: user.GlobalRecvMsgOpt,
+			UserID:   user.UserID,
+			Nickname: user.Nickname,
 		})
 	}
 	if err := s.userStorageHandler.Create(ctx, users); err != nil {
