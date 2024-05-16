@@ -11,19 +11,17 @@ import (
 	"runtime"
 )
 
-func init() {
-	ensureToolsInstalled()
-}
-
 func ensureToolsInstalled() {
 	tools := map[string]string{
-		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
-		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
+		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go",
+		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc",
 	}
+	targetDir := "/usr/local/bin" // 指定安装目录
 	for tool, path := range tools {
-		if _, err := exec.LookPath(tool); err != nil {
-			fmt.Printf("Installing %s...\n", tool)
-			if err := sh.Run("go", "install", path); err != nil {
+		targetPath := filepath.Join(targetDir, tool)
+		if _, err := exec.LookPath(targetPath); err != nil {
+			fmt.Printf("Building and installing %s...\n", tool)
+			if err := goBuildInstall(path, tool, targetDir); err != nil {
 				fmt.Printf("Failed to install %s: %s\n", tool, err)
 				os.Exit(1)
 			}
@@ -32,7 +30,7 @@ func ensureToolsInstalled() {
 		}
 	}
 
-	if _, err := exec.LookPath("protoc"); err == nil {
+	if _, err := exec.LookPath(filepath.Join(targetDir, "protoc")); err == nil {
 		fmt.Println("protoc is already installed.")
 		return
 	}
@@ -41,6 +39,12 @@ func ensureToolsInstalled() {
 		fmt.Printf("Failed to install protoc: %s\n", err)
 		os.Exit(1)
 	}
+}
+
+func goBuildInstall(packagePath, binaryName, installDir string) error {
+	cmd := exec.Command("go", "build", "-o", filepath.Join(installDir, binaryName), packagePath)
+	cmd.Env = append(os.Environ(), "GOBIN="+installDir)
+	return cmd.Run()
 }
 
 //https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-amd64.zip
@@ -99,6 +103,8 @@ func installProtoc() error {
 
 // Protocol compiles the protobuf files
 func Protocol() error {
+	ensureToolsInstalled()
+
 	protoPath := "./pkg/protocol"
 	dirs, err := os.ReadDir(protoPath)
 	if err != nil {
