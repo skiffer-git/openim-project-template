@@ -3,6 +3,8 @@ package util
 import (
 	"fmt"
 	"github.com/magefile/mage/sh"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +12,10 @@ import (
 )
 
 func init() {
+	ensureToolsInstalled()
+}
+
+func ensureToolsInstalled() {
 	tools := map[string]string{
 		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
 		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
@@ -26,35 +32,51 @@ func init() {
 		}
 	}
 
-	// Check if protoc is installed
-	if _, err := exec.LookPath("protoc"); err != nil {
-		fmt.Println("protoc is not installed, attempting to install...")
-		installProtoc()
-	} else {
+	if _, err := exec.LookPath("protoc"); err == nil {
 		fmt.Println("protoc is already installed.")
+		return
 	}
-
+	fmt.Println("Installing protoc...")
+	if err := installProtoc(); err != nil {
+		fmt.Printf("Failed to install protoc: %s\n", err)
+		os.Exit(1)
+	}
 }
 
-func installProtoc() {
-	// Define the protoc version
+func installProtoc() error {
 	version := "3.17.3"
-	platform := runtime.GOOS
-	arch := runtime.GOARCH
+	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
+	osArch := runtime.GOOS + "-" + runtime.GOARCH
+	fileName := fmt.Sprintf("protoc-%s-%s.zip", version, osArch)
+	url := baseURL + "/" + fileName
 
-	// Construct the download URL based on the platform and architecture
-	url := fmt.Sprintf("https://github.com/protocolbuffers/protobuf/releases/download/v%s/protoc-%s-%s-%s.zip", version, version, platform, arch)
-
-	// Example for Linux x86_64, adjust based on actual OS/arch detection
-	if platform == "linux" && arch == "amd64" {
-		downloadAndExtract(url, "/usr/local/bin")
+	// Download the file
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
 	}
-}
+	defer resp.Body.Close()
 
-func downloadAndExtract(url, targetDir string) {
-	fmt.Printf("Downloading protoc from %s\n", url)
-	// This is a simplification. You'd typically use `net/http` to download the file, then use `archive/zip` to extract it
-	// and move the `protoc` binary to targetDir
+	// Create a temporary file
+	tmpFile, err := os.CreateTemp("", "protoc-*.zip")
+	if err != nil {
+		return err
+	}
+	defer tmpFile.Close()
+
+	// Write the body to file
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	// Unzip the file to /usr/local/bin (you might want to change this based on your OS)
+	// This requires admin privileges, consider where to unzip based on your user privileges
+	if err := sh.Run("unzip", tmpFile.Name(), "-d", "/usr/local/bin"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Protocol compiles the protobuf files
