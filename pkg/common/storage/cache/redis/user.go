@@ -62,6 +62,7 @@ func (u *User) NewCache() cache.User {
 		userDB:     u.userDB,
 		expireTime: u.expireTime,
 		rcClient:   u.rcClient,
+		Meta:       u.Copy(),
 	}
 }
 
