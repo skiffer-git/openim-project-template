@@ -24,6 +24,8 @@ for name in "${PROTO_NAMES[@]}"; do
   fi
 done
 
+
+
 if [ "$(uname -s)" == "Darwin" ]; then
     find . -type f -name '*.pb.go' -exec sed -i '' 's/,omitempty"`/\"\`/g' {} +
 else

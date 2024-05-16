@@ -132,48 +132,59 @@ func getProtocArch(archMap map[string]string, goArch string) string {
 	return goArch
 }
 
-// Protocol compiles the protobuf files
+// Protocol compiles the protobuf files.
 func Protocol() error {
-	err := ensureToolsInstalled()
-	if err != nil {
-		fmt.Println("err ", err.Error())
+	if err := ensureToolsInstalled(); err != nil {
+		fmt.Println("error ", err.Error())
 		os.Exit(1)
+
 	}
 
 	protoPath := "./pkg/protocol"
 	dirs, err := os.ReadDir(protoPath)
 	if err != nil {
-		return fmt.Errorf("failed to read directory: %s", err)
+		fmt.Println("error ", err.Error())
+		os.Exit(1)
 	}
 
 	for _, dir := range dirs {
 		if dir.IsDir() {
-			dirName := dir.Name()
-			protoFile := filepath.Join(protoPath, dirName, dirName+".proto")
-			outputDir := filepath.Join(protoPath, dirName)
-			module := "github.com/openimsdk/openim-project-template/pkg/protocol/" + dirName
-
-			args := []string{
-				"--go_out=" + outputDir,
-				"--go_opt=module=" + module,
-				"--go-grpc_out=" + outputDir,
-				"--go-grpc_opt=module=" + module,
-				protoFile,
+			if err := compileProtoFiles(protoPath, dir.Name()); err != nil {
+				fmt.Println("error ", err.Error())
+				os.Exit(1)
 			}
-			fmt.Printf("Compiling %s...\n", protoFile)
-			if err := sh.Run("protoc", args...); err != nil {
-				return fmt.Errorf("failed to compile %s: %s", protoFile, err)
-			}
+		}
+	}
+	return nil
+}
 
-			// Replace "omitempty" in *.pb.go files
-			files, _ := filepath.Glob(filepath.Join(outputDir, "*.pb.go"))
-			for _, file := range files {
-				fmt.Printf("Fixing omitempty in %s...\n", file)
+func compileProtoFiles(basePath, dirName string) error {
+	protoFile := filepath.Join(basePath, dirName, dirName+".proto")
+	outputDir := filepath.Join(basePath, dirName)
+	module := "github.com/openimsdk/openim-project-template/pkg/protocol/" + dirName
+	args := []string{
+		"--go_out=plugins=grpc:" + outputDir,
+		"--go_opt=module=" + module,
+		protoFile,
+	}
+	fmt.Printf("Compiling %s...\n", protoFile)
+	if err := sh.Run("protoc", args...); err != nil {
+		return fmt.Errorf("failed to compile %s: %s", protoFile, err)
+	}
+	return fixOmitemptyInDirectory(outputDir)
 
-				if err := RemoveOmitemptyFromFile(file); err != nil {
-					return fmt.Errorf("failed to replace omitempty in %s: %s", file, err)
-				}
-			}
+}
+
+func fixOmitemptyInDirectory(dir string) error {
+	files, err := filepath.Glob(filepath.Join(dir, "*.pb.go"))
+	if err != nil {
+		return fmt.Errorf("failed to list .pb.go files in %s: %s", dir, err)
+	}
+	fmt.Printf("Fixing omitempty in dir  %s...\n", dir)
+	for _, file := range files {
+		fmt.Printf("Fixing omitempty in %s...\n", file)
+		if err := RemoveOmitemptyFromFile(file); err != nil {
+			return fmt.Errorf("failed to replace omitempty in %s: %s", file, err)
 		}
 	}
 	return nil
@@ -190,7 +201,6 @@ func RemoveOmitemptyFromFile(filePath string) error {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		// 移除 `omitempty` 标签
 		line = strings.ReplaceAll(line, ",omitempty", "")
 		lines = append(lines, line)
 	}
