@@ -1,6 +1,7 @@
 package util
 
 import (
+	"archive/zip"
 	"bufio"
 	"fmt"
 	"github.com/magefile/mage/sh"
@@ -13,12 +14,19 @@ import (
 	"strings"
 )
 
-func ensureToolsInstalled() {
+func ensureToolsInstalled() error {
 	tools := map[string]string{
 		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
 		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
 	}
-	targetDir := "/usr/local/bin"
+
+	// Setting GOBIN based on OS, Windows needs a different default path
+	var targetDir string
+	if runtime.GOOS == "windows" {
+		targetDir = filepath.Join(os.Getenv("USERPROFILE"), "go", "bin")
+	} else {
+		targetDir = "/usr/local/bin"
+	}
 
 	os.Setenv("GOBIN", targetDir)
 
@@ -26,8 +34,7 @@ func ensureToolsInstalled() {
 		if _, err := exec.LookPath(filepath.Join(targetDir, tool)); err != nil {
 			fmt.Printf("Installing %s to %s...\n", tool, targetDir)
 			if err := sh.Run("go", "install", path); err != nil {
-				fmt.Printf("Failed to install %s: %s\n", tool, err)
-				os.Exit(1)
+				return fmt.Errorf("failed to install %s: %s", tool, err)
 			}
 		} else {
 			fmt.Printf("%s is already installed in %s.\n", tool, targetDir)
@@ -36,33 +43,14 @@ func ensureToolsInstalled() {
 
 	if _, err := exec.LookPath(filepath.Join(targetDir, "protoc")); err == nil {
 		fmt.Println("protoc is already installed.")
-		return
+		return nil
 	}
+
 	fmt.Println("Installing protoc...")
-	if err := installProtoc(); err != nil {
-		fmt.Printf("Failed to install protoc: %s\n", err)
-		os.Exit(1)
-	}
+	return installProtoc(targetDir)
 }
 
-func goBuildInstall(packagePath, binaryName, installDir string) error {
-	cmd := exec.Command("go", "build", "-o", filepath.Join(installDir, binaryName), packagePath)
-	cmd.Env = append(os.Environ(), "GOBIN="+installDir)
-	return cmd.Run()
-}
-
-//https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-amd64.zip
-//https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-x86_64.zip
-
-func getProtocArch(archMap map[string]string, goArch string) string {
-	if arch, ok := archMap[goArch]; ok {
-		return arch
-	}
-	return goArch
-}
-
-func installProtoc() error {
-
+func installProtoc(installDir string) error {
 	version := "26.1"
 	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
 	archMap := map[string]string{
@@ -70,13 +58,17 @@ func installProtoc() error {
 		"386":   "x86",
 		"arm64": "aarch64",
 	}
+	protocFile := "protoc-%s-%s.zip"
+
 	osArch := runtime.GOOS + "-" + getProtocArch(archMap, runtime.GOARCH)
-	fileName := fmt.Sprintf("protoc-%s-%s.zip", version, osArch)
+	if runtime.GOOS == "windows" {
+		osArch = "win64" // assuming 64-bit, for 32-bit use "win32"
+	}
+	fileName := fmt.Sprintf(protocFile, version, osArch)
 	url := baseURL + "/" + fileName
 
 	fmt.Println("URL:", url)
 
-	// Download the file
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -90,19 +82,54 @@ func installProtoc() error {
 	}
 	defer tmpFile.Close()
 
-	// Write the body to file
 	_, err = io.Copy(tmpFile, resp.Body)
 	if err != nil {
 		return err
 	}
 
-	// Unzip the file to /usr/local/bin (you might want to change this based on your OS)
-	// This requires admin privileges, consider where to unzip based on your user privileges
-	if err := sh.Run("unzip", tmpFile.Name(), "-d", "/usr/local"); err != nil {
+	return unzip(tmpFile.Name(), installDir)
+}
+
+func unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
 		return err
 	}
+	defer r.Close()
 
+	for _, f := range r.File {
+		fpath := filepath.Join(dest, f.Name)
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fpath, os.ModePerm)
+			continue
+		}
+
+		outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return err
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			outFile.Close()
+			return err
+		}
+
+		_, err = io.Copy(outFile, rc)
+		outFile.Close()
+		rc.Close()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func getProtocArch(archMap map[string]string, goArch string) string {
+	if arch, ok := archMap[goArch]; ok {
+		return arch
+	}
+	return goArch
 }
 
 // Protocol compiles the protobuf files
