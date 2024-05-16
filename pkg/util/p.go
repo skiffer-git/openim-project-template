@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/magefile/mage/sh"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,9 +16,8 @@ import (
 
 func ensureToolsInstalled() error {
 	tools := map[string]string{
-		"protoc-gen-go":      "google.golang.org/protobuf/cmd/protoc-gen-go@latest",
-		"protoc-gen-go-grpc": "google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest",
-		"protoc":             "https://github.com/golang/protobuf/tree/master/protoc-gen-go@latest",
+
+		"protoc-gen-go": "https://github.com/golang/protobuf/tree/master/protoc-gen-go@latest",
 	}
 
 	// Setting GOBIN based on OS, Windows needs a different default path
@@ -41,56 +41,54 @@ func ensureToolsInstalled() error {
 		}
 	}
 
-	//if _, err := exec.LookPath(filepath.Join(targetDir, "protoc")); err == nil {
-	//	fmt.Println("protoc is already installed.")
-	//	return nil
-	//}
-	//
-	//fmt.Println("Installing protoc...")
-	//return installProtoc(targetDir)
-	return nil
+	if _, err := exec.LookPath(filepath.Join(targetDir, "protoc")); err == nil {
+		fmt.Println("protoc is already installed.")
+		return nil
+	}
+
+	fmt.Println("Installing protoc...")
+	return installProtoc(targetDir)
 }
 
-//
-//func installProtoc(installDir string) error {
-//	version := "26.1"
-//	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
-//	archMap := map[string]string{
-//		"amd64": "x86_64",
-//		"386":   "x86",
-//		"arm64": "aarch64",
-//	}
-//	protocFile := "protoc-%s-%s.zip"
-//
-//	osArch := runtime.GOOS + "-" + getProtocArch(archMap, runtime.GOARCH)
-//	if runtime.GOOS == "windows" {
-//		osArch = "win64" // assuming 64-bit, for 32-bit use "win32"
-//	}
-//	fileName := fmt.Sprintf(protocFile, version, osArch)
-//	url := baseURL + "/" + fileName
-//
-//	fmt.Println("URL:", url)
-//
-//	resp, err := http.Get(url)
-//	if err != nil {
-//		return err
-//	}
-//	defer resp.Body.Close()
-//
-//	// Create a temporary file
-//	tmpFile, err := os.CreateTemp("", "protoc-*.zip")
-//	if err != nil {
-//		return err
-//	}
-//	defer tmpFile.Close()
-//
-//	_, err = io.Copy(tmpFile, resp.Body)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return unzip(tmpFile.Name(), installDir)
-//}
+func installProtoc(installDir string) error {
+	version := "26.1"
+	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
+	archMap := map[string]string{
+		"amd64": "x86_64",
+		"386":   "x86",
+		"arm64": "aarch64",
+	}
+	protocFile := "protoc-%s-%s.zip"
+
+	osArch := runtime.GOOS + "-" + getProtocArch(archMap, runtime.GOARCH)
+	if runtime.GOOS == "windows" {
+		osArch = "win64" // assuming 64-bit, for 32-bit use "win32"
+	}
+	fileName := fmt.Sprintf(protocFile, version, osArch)
+	url := baseURL + "/" + fileName
+
+	fmt.Println("URL:", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create a temporary file
+	tmpFile, err := os.CreateTemp("", "protoc-*.zip")
+	if err != nil {
+		return err
+	}
+	defer tmpFile.Close()
+
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Println("tmp ", tmpFile.Name(), "install  ", installDir)
+	return unzip(tmpFile.Name(), installDir)
+}
 
 func unzip(src, dest string) error {
 	r, err := zip.OpenReader(src)
@@ -136,7 +134,11 @@ func getProtocArch(archMap map[string]string, goArch string) string {
 
 // Protocol compiles the protobuf files
 func Protocol() error {
-	ensureToolsInstalled()
+	err := ensureToolsInstalled()
+	if err != nil {
+		fmt.Println("err ", err.Error())
+		os.Exit(1)
+	}
 
 	protoPath := "./pkg/protocol"
 	dirs, err := os.ReadDir(protoPath)
