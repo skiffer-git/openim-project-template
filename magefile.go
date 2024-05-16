@@ -5,6 +5,7 @@ package main
 
 import (
 	"github.com/openimsdk/gomake/mageutil"
+	"github.com/openimsdk/openim-project-template/pkg/util"
 	"os"
 )
 
@@ -30,4 +31,8 @@ func Stop() {
 
 func Check() {
 	mageutil.CheckAndReportBinariesStatus()
+}
+
+func Compile() {
+	util.Compile()
 }
