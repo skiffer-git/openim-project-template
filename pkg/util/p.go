@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/magefile/mage/sh"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 func ensureToolsInstalled() {
@@ -136,11 +138,51 @@ func Protocol() error {
 			files, _ := filepath.Glob(filepath.Join(outputDir, "*.pb.go"))
 			for _, file := range files {
 				fmt.Printf("Fixing omitempty in %s...\n", file)
-				if err := sh.Run("sed", "-i", "", `s/,omitempty\"/\"/g`, file); err != nil {
+
+				if err := RemoveOmitemptyFromFile(file); err != nil {
 					return fmt.Errorf("failed to replace omitempty in %s: %s", file, err)
 				}
 			}
 		}
 	}
 	return nil
+}
+
+func RemoveOmitemptyFromFile(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file: %s", err)
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// 移除 `omitempty` 标签
+		line = strings.ReplaceAll(line, ",omitempty", "")
+		lines = append(lines, line)
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading file: %s", err)
+	}
+
+	return writeLines(lines, filePath)
+}
+
+// writeLines writes the lines to the given file.
+func writeLines(lines []string, path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("error creating file: %s", err)
+	}
+	defer file.Close()
+
+	w := bufio.NewWriter(file)
+	for _, line := range lines {
+		if _, err := fmt.Fprintln(w, line); err != nil {
+			return fmt.Errorf("error writing to file: %s", err)
+		}
+	}
+	return w.Flush()
 }
