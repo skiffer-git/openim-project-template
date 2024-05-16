@@ -43,16 +43,31 @@ func ensureToolsInstalled() {
 	}
 }
 
+//https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-amd64.zip
 //https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-x86_64.zip
 
+func getProtocArch(archMap map[string]string, goArch string) string {
+	if arch, ok := archMap[goArch]; ok {
+		return arch
+	}
+	return goArch
+}
+
 func installProtoc() error {
+
 	version := "26.1"
 	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
-	osArch := runtime.GOOS + "-" + runtime.GOARCH
+	archMap := map[string]string{
+		"amd64": "x86_64",
+		"386":   "x86",
+		"arm64": "aarch64",
+	}
+	osArch := runtime.GOOS + "-" + getProtocArch(archMap, runtime.GOARCH)
 	fileName := fmt.Sprintf("protoc-%s-%s.zip", version, osArch)
 	url := baseURL + "/" + fileName
 
-	fmt.Println("download ", url)
+	fmt.Println("URL:", url)
+
 	// Download the file
 	resp, err := http.Get(url)
 	if err != nil {
