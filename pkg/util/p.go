@@ -43,8 +43,10 @@ func ensureToolsInstalled() {
 	}
 }
 
+//https://github.com/protocolbuffers/protobuf/releases/download/v26.1/protoc-26.1-linux-x86_64.zip
+
 func installProtoc() error {
-	version := "3.17.3"
+	version := "26.1"
 	baseURL := "https://github.com/protocolbuffers/protobuf/releases/download/v" + version
 	osArch := runtime.GOOS + "-" + runtime.GOARCH
 	fileName := fmt.Sprintf("protoc-%s-%s.zip", version, osArch)
