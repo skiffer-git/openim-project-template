@@ -33,6 +33,6 @@ func Check() {
 	mageutil.CheckAndReportBinariesStatus()
 }
 
-func Compile() {
-	util.Compile()
+func Protocol() {
+	util.Protocol()
 }
