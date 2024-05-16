@@ -5,7 +5,6 @@ package main
 
 import (
 	"github.com/openimsdk/gomake/mageutil"
-	"github.com/openimsdk/openim-project-template/pkg/util"
 	"os"
 )
 
@@ -34,5 +33,5 @@ func Check() {
 }
 
 func Protocol() {
-	util.Protocol()
+	mageutil.Protocol()
 }
