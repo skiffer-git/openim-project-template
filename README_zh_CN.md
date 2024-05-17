@@ -56,6 +56,7 @@ mage protocol
 - **OperationID**: 在 RPC 中从 `context` 获取 `OperationID` 使用 `mcontext.GetOperationID(ctx)`。
 - **UserID 和 PlatformID**: 在 RPC 中从 `context` 获取登录用户 `userID` 和平台 `platformID` 使用 `mcontext.GetOpUserID(ctx)` 和 `mcontext.GetOpUserPlatform(ctx)`。
 - **API 调用者**: 需要将 token 和 operationID 设置在 HTTP header 中。
+- **日志打印**: 统一使用"github.com/openimsdk/tools/log" 
 
 
 
