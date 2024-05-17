@@ -50,8 +50,11 @@ mage protocol
 
 - **API 入口**: 在 `pkg/common/cmd/api.go`，具体的 `start` 函数在 `internal/api/init.go`。
 - **RPC 入口**: 在 `pkg/common/cmd/user.go`，具体的 `start` 函数在 `pkg/startrpc/start.go`。
+  
+## 8. 普罗米修斯统计  
+- **增加统计变量**: 在`pkg/common/prommetrics/user.go`中，变量值修改的逻辑在rpc函数中调用。
 
-## 8. 关于鉴权、日志、OperationID、Token 和 Context
+## 9. 关于鉴权、日志、OperationID、Token 和 Context
 
 - **OperationID**: 在 RPC 中从 `context` 获取 `OperationID` 使用 `mcontext.GetOperationID(ctx)`。
 - **UserID 和 PlatformID**: 在 RPC 中从 `context` 获取登录用户 `userID` 和平台 `platformID` 使用 `mcontext.GetOpUserID(ctx)` 和 `mcontext.GetOpUserPlatform(ctx)`。
