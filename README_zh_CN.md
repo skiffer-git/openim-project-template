@@ -48,8 +48,8 @@ mage protocol
 
 ## 7. 入口函数
 
-- **API 入口**: 在 `pkg/cmd/api.go`，具体的 `start` 函数在 `internal/api/init.go`。
-- **RPC 入口**: 在 `pkg/cmd/user.go`，具体的 `start` 函数在 `pkg/startrpc/start.go`。
+- **API 入口**: 在 `pkg/common/cmd/api.go`，具体的 `start` 函数在 `internal/api/init.go`。
+- **RPC 入口**: 在 `pkg/common/cmd/user.go`，具体的 `start` 函数在 `pkg/startrpc/start.go`。
 
 ## 8. 关于鉴权、日志、OperationID、Token 和 Context
 
