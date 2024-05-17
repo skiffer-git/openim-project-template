@@ -11,7 +11,7 @@ require (
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible // indirect
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/openimsdk/protocol v0.0.65
-	github.com/openimsdk/tools v0.0.49-alpha.19
+	github.com/openimsdk/tools v0.0.49-alpha.22
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.18.0
 	go.mongodb.org/mongo-driver v1.14.0
@@ -23,6 +23,7 @@ require (
 require github.com/google/uuid v1.6.0 // indirect
 
 require (
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/openimsdk/gomake v0.0.14-alpha.2
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/shirou/gopsutil v3.21.11+incompatible

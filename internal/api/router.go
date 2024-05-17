@@ -3,8 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/openimsdk/openim-project-template/pkg/rpcclient"
 	"github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/mw"
@@ -12,15 +11,23 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// Whitelist api not parse token
+var whitelist = []string{
+	"",
+}
+
+func secretKey(secret string) jwt.Keyfunc {
+	return func(token *jwt.Token) (any, error) {
+		return []byte(secret), nil
+	}
+}
+
 func newGinRouter(disCov discovery.SvcDiscoveryRegistry, config *Config) *gin.Engine {
 	disCov.AddOption(mw.GrpcClient(), grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, "round_robin")))
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		_ = v.RegisterValidation("required_if", RequiredIf)
-	}
-	r.Use(gin.Recovery(), mw.CorsHandler(), mw.GinParseOperationID())
+	r.Use(gin.Recovery(), mw.CorsHandler(), mw.GinParseOperationID(), mw.GinParseToken(secretKey(config.API.Secret), whitelist))
 	// init rpc client here
 	userRpc := rpcclient.NewUser(disCov, config.Share.RpcRegisterName.User)
 

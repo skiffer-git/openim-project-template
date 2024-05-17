@@ -1,3 +1,4 @@
+secret: openIM123
 api:
   # Listening IP; 0.0.0.0 means both internal and external IPs are listened to, default is recommended
   listenIP: 0.0.0.0

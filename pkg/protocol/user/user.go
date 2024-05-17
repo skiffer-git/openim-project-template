@@ -27,11 +27,11 @@ func (x *GetDesignateUsersReq) Check() error {
 
 func (x *UserRegisterReq) Check() error {
 	if x.Users == nil {
-		return errors.New("Users are empty")
+		return errors.New("users are empty")
 	}
 	for _, u := range x.Users {
 		if u.Nickname == "" {
-			return errors.New("User name is empty")
+			return errors.New("nickname is empty")
 		}
 	}
 

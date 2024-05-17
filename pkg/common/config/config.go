@@ -49,7 +49,8 @@ type Share struct {
 }
 
 type API struct {
-	Api struct {
+	Secret string `mapstructure:"secret"`
+	Api    struct {
 		ListenIP string `mapstructure:"listenIP"`
 		Ports    []int  `mapstructure:"ports"`
 	} `mapstructure:"api"`
