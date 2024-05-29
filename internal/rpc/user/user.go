@@ -17,17 +17,15 @@ package user
 import (
 	"context"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
-	"github.com/openimsdk/openim-project-template/pkg/common/prommetrics"
-	mgo2 "github.com/openimsdk/openim-project-template/pkg/common/storage/database/mgo"
-	"github.com/openimsdk/tools/db/redisutil"
-
-	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
-
 	"github.com/openimsdk/openim-project-template/pkg/common/convert"
+	"github.com/openimsdk/openim-project-template/pkg/common/prommetrics"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache/redis"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/controller"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/database/mgo"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 	pbuser "github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"github.com/openimsdk/tools/db/mongoutil"
+	"github.com/openimsdk/tools/db/redisutil"
 	registry "github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/errs"
 	"github.com/openimsdk/tools/utils/datautil"
@@ -59,11 +57,11 @@ func Start(ctx context.Context, config *Config, client registry.SvcDiscoveryRegi
 		return err
 	}
 
-	userDB, err := mgo2.NewUserMongo(mgoCli.GetDB())
+	userDB, err := mgo.NewUserMongo(mgoCli.GetDB())
 	if err != nil {
 		return err
 	}
-	userCache := redis.NewUser(rdb, userDB, redis.GetDefaultOpt())
+	userCache := redis.NewUser(rdb, userDB, redis.GetRocksCacheOptions())
 	database := controller.NewUser(userDB, userCache, mgoCli.GetTx())
 	u := &userServer{
 		userStorageHandler: database,

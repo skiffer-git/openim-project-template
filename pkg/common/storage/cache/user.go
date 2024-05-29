@@ -20,8 +20,8 @@ import (
 )
 
 type User interface {
-	Meta
-	NewCache() User
+	BatchDeleter
+	CloneUserCache() User
 	GetUsersInfo(ctx context.Context, userIDs []string) ([]*model.User, error)
 	DelUsersInfo(userIDs ...string) User
 }

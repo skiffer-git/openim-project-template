@@ -63,6 +63,6 @@ func (u *UserStorageManager) Create(ctx context.Context, users []*model.User) (e
 		}
 		return u.cache.DelUsersInfo(datautil.Slice(users, func(e *model.User) string {
 			return e.UserID
-		})...).ExecDel(ctx)
+		})...).ChainExecDel(ctx)
 	})
 }

@@ -27,42 +27,32 @@ import (
 )
 
 const (
-	userExpireTime            = time.Second * 60 * 60 * 12
-	olineStatusKey            = "ONLINE_STATUS:"
-	userOlineStatusExpireTime = time.Second * 60 * 60 * 24
-	statusMod                 = 501
+	userExpireTime = time.Second * 60 * 60 * 12
 )
 
 type User struct {
-	cache.Meta
-	rdb        redis.UniversalClient
+	cache.BatchDeleter
 	userDB     database.User
 	expireTime time.Duration
 	rcClient   *rockscache.Client
 }
 
-func NewUser(rdb redis.UniversalClient, userDB database.User, options rockscache.Options) cache.User {
-	rcClient := rockscache.NewClient(rdb, options)
-	mc := NewMetaCacheRedis(rcClient)
-	//u := localCache.User
-	//mc.SetTopic(u.Topic)
-	mc.SetRawRedisClient(rdb)
+func NewUser(rdb redis.UniversalClient, userDB database.User, options *rockscache.Options) cache.User {
+	batchHandler := NewBatchDeleterRedis(rdb, options, nil)
 	return &User{
-		rdb:        rdb,
-		Meta:       NewMetaCacheRedis(rcClient),
-		userDB:     userDB,
-		expireTime: userExpireTime,
-		rcClient:   rcClient,
+		BatchDeleter: batchHandler,
+		rcClient:     rockscache.NewClient(rdb, *options),
+		userDB:       userDB,
+		expireTime:   userExpireTime,
 	}
 }
 
-func (u *User) NewCache() cache.User {
+func (u *User) CloneUserCache() cache.User {
 	return &User{
-		rdb:        u.rdb,
-		userDB:     u.userDB,
-		expireTime: u.expireTime,
-		rcClient:   u.rcClient,
-		Meta:       u.Copy(),
+		BatchDeleter: u.BatchDeleter.Clone(),
+		rcClient:     u.rcClient,
+		userDB:       u.userDB,
+		expireTime:   u.expireTime,
 	}
 }
 
@@ -75,7 +65,7 @@ func (u *User) getUserGlobalRecvMsgOptKey(userID string) string {
 }
 
 func (u *User) GetUsersInfo(ctx context.Context, userIDs []string) ([]*model.User, error) {
-	return batchGetCache2(ctx, u.rcClient, u.expireTime, userIDs, func(userID string) string {
+	return batchGetCache(ctx, u.rcClient, u.expireTime, userIDs, func(userID string) string {
 		return u.getUserInfoKey(userID)
 	}, func(ctx context.Context, userID string) (*model.User, error) {
 		return u.userDB.Take(ctx, userID)
@@ -87,7 +77,7 @@ func (u *User) DelUsersInfo(userIDs ...string) cache.User {
 	for _, userID := range userIDs {
 		keys = append(keys, u.getUserInfoKey(userID))
 	}
-	cache := u.NewCache()
+	cache := u.CloneUserCache()
 	cache.AddKeys(keys...)
 
 	return cache

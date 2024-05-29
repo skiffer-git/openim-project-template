@@ -1,6 +1,6 @@
 module github.com/openimsdk/openim-project-template
 
-go 1.21.2
+go 1.20
 
 require (
 	github.com/dtm-labs/rockscache v0.1.1
