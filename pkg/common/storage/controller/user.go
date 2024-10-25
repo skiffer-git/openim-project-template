@@ -16,13 +16,11 @@ package controller
 
 import (
 	"context"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache"
+	"github.com/openimsdk/openim-project-template/pkg/common/storage/database"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 	"github.com/openimsdk/tools/db/tx"
 	"github.com/openimsdk/tools/errs"
-	"github.com/openimsdk/tools/utils/datautil"
-
-	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache"
-	"github.com/openimsdk/openim-project-template/pkg/common/storage/database"
 )
 
 type User interface {
@@ -57,12 +55,5 @@ func (u *UserStorageManager) FindWithError(ctx context.Context, userIDs []string
 
 // Create Insert multiple external guarantees that the userID is not repeated and does not exist in the storage.
 func (u *UserStorageManager) Create(ctx context.Context, users []*model.User) (err error) {
-	return u.tx.Transaction(ctx, func(ctx context.Context) error {
-		if err = u.db.Create(ctx, users); err != nil {
-			return err
-		}
-		return u.cache.DelUsersInfo(datautil.Slice(users, func(e *model.User) string {
-			return e.UserID
-		})...).ChainExecDel(ctx)
-	})
+	return u.db.Create(ctx, users)
 }

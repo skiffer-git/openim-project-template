@@ -25,7 +25,6 @@ import (
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 	pbuser "github.com/openimsdk/openim-project-template/pkg/protocol/user"
 	"github.com/openimsdk/tools/db/mongoutil"
-	"github.com/openimsdk/tools/db/redisutil"
 	registry "github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/errs"
 	"github.com/openimsdk/tools/utils/datautil"
@@ -41,7 +40,6 @@ type userServer struct {
 
 type Config struct {
 	Rpc       config.User
-	Redis     config.Redis
 	Mongo     config.Mongo
 	Discovery config.Discovery
 	Share     config.Share
@@ -52,16 +50,12 @@ func Start(ctx context.Context, config *Config, client registry.SvcDiscoveryRegi
 	if err != nil {
 		return err
 	}
-	rdb, err := redisutil.NewRedisClient(ctx, config.Redis.Build())
-	if err != nil {
-		return err
-	}
 
 	userDB, err := mgo.NewUserMongo(mgoCli.GetDB())
 	if err != nil {
 		return err
 	}
-	userCache := redis.NewUser(rdb, userDB, redis.GetRocksCacheOptions())
+	userCache := redis.NewUser(userDB)
 	database := controller.NewUser(userDB, userCache, mgoCli.GetTx())
 	u := &userServer{
 		userStorageHandler: database,

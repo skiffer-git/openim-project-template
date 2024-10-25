@@ -20,10 +20,7 @@ import (
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/model"
 	"time"
 
-	"github.com/dtm-labs/rockscache"
-	"github.com/openimsdk/openim-project-template/pkg/common/cachekey"
 	"github.com/openimsdk/openim-project-template/pkg/common/storage/cache"
-	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -31,56 +28,21 @@ const (
 )
 
 type User struct {
-	cache.BatchDeleter
 	userDB     database.User
 	expireTime time.Duration
-	rcClient   *rockscache.Client
 }
 
-func NewUser(rdb redis.UniversalClient, userDB database.User, options *rockscache.Options) cache.User {
-	batchHandler := NewBatchDeleterRedis(rdb, options, nil)
+func NewUser(userDB database.User) cache.User {
 	return &User{
-		BatchDeleter: batchHandler,
-		rcClient:     rockscache.NewClient(rdb, *options),
-		userDB:       userDB,
-		expireTime:   userExpireTime,
+		userDB:     userDB,
+		expireTime: userExpireTime,
 	}
-}
-
-func (u *User) CloneUserCache() cache.User {
-	return &User{
-		BatchDeleter: u.BatchDeleter.Clone(),
-		rcClient:     u.rcClient,
-		userDB:       u.userDB,
-		expireTime:   u.expireTime,
-	}
-}
-
-func (u *User) getUserInfoKey(userID string) string {
-	return cachekey.GetUserInfoKey(userID)
-}
-
-func (u *User) getUserGlobalRecvMsgOptKey(userID string) string {
-	return cachekey.GetUserGlobalRecvMsgOptKey(userID)
 }
 
 func (u *User) GetUsersInfo(ctx context.Context, userIDs []string) ([]*model.User, error) {
-	return batchGetCache(ctx, u.rcClient, u.expireTime, userIDs, func(userID string) string {
-		return u.getUserInfoKey(userID)
-	}, func(ctx context.Context, userID string) (*model.User, error) {
-		return u.userDB.Take(ctx, userID)
-	})
-}
-
-func (u *User) DelUsersInfo(userIDs ...string) cache.User {
-	keys := make([]string, 0, len(userIDs))
-	for _, userID := range userIDs {
-		keys = append(keys, u.getUserInfoKey(userID))
-	}
-	cache := u.CloneUserCache()
-	cache.AddKeys(keys...)
-
-	return cache
+	userID := userIDs[0]
+	r, err := u.userDB.Take(ctx, userID)
+	return []*model.User{r}, err
 }
 
 type Comparable interface {

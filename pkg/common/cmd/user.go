@@ -37,7 +37,6 @@ func NewUserRpcCmd() *UserRpcCmd {
 	ret := &UserRpcCmd{userConfig: &userConfig}
 	ret.configMap = map[string]any{
 		OpenIMRPCUserCfgFileName: &userConfig.Rpc,
-		RedisConfigFileName:      &userConfig.Redis,
 		MongodbConfigFileName:    &userConfig.Mongo,
 		ShareFileName:            &userConfig.Share,
 		DiscoveryConfigFilename:  &userConfig.Discovery,
