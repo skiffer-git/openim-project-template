@@ -49,16 +49,10 @@ func CheckMongo(ctx context.Context, config *config.Mongo) error {
 func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Discovery, error) {
 	var (
 		mongoConfig = &config.Mongo{}
-		redisConfig = &config.Redis{}
 
 		discovery = &config.Discovery{}
 	)
 	err := config.LoadConfig(filepath.Join(configDir, cmd.MongodbConfigFileName), cmd.ConfigEnvPrefixMap[cmd.MongodbConfigFileName], mongoConfig)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	err = config.LoadConfig(filepath.Join(configDir, cmd.RedisConfigFileName), cmd.ConfigEnvPrefixMap[cmd.RedisConfigFileName], redisConfig)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -68,7 +62,7 @@ func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Discove
 		return nil, nil, nil, err
 	}
 
-	return mongoConfig, redisConfig, discovery, nil
+	return mongoConfig, nil, discovery, nil
 }
 
 func main() {
