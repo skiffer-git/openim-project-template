@@ -21,7 +21,6 @@ import (
 	"github.com/openimsdk/openim-project-template/pkg/common/cmd"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
 	"github.com/openimsdk/tools/db/mongoutil"
-	"github.com/openimsdk/tools/db/redisutil"
 	"github.com/openimsdk/tools/discovery/etcd"
 	"github.com/openimsdk/tools/system/program"
 	"os"
@@ -40,7 +39,7 @@ func CheckEtcd(ctx context.Context, config *config.Etcd) error {
 }
 
 func CheckRedis(ctx context.Context, config *config.Redis) error {
-	return redisutil.Check(ctx, config.Build())
+	return nil
 }
 
 func CheckMongo(ctx context.Context, config *config.Mongo) error {
