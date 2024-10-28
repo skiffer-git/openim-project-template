@@ -3,7 +3,7 @@ uri: ''
 # List of MongoDB server addresses
 address: [ localhost:37017 ]
 # Name of the database
-database: openim_v3
+database: test-k8s
 # Username for database authentication
 username: openIM
 # Password for database authentication
