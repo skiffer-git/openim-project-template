@@ -40,10 +40,12 @@ spec:
   selector:
     app: user-api-server
   ports:
-    - protocol: TCP
+    - name: http-10302
+      protocol: TCP
       port: 10302
       targetPort: 10302
-    - protocol: TCP
+    - name: prometheus-20113
+      protocol: TCP
       port: 20113
       targetPort: 20113
   type: ClusterIP
