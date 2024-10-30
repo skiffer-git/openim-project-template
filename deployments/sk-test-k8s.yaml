@@ -16,6 +16,7 @@ spec:
       containers:
         - name: user-api-server-container
           image: user-api-server:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
@@ -66,6 +67,7 @@ spec:
       containers:
         - name: user-rpc-server-container
           image: user-rpc-server:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: MONGO_USER
               valueFrom:
@@ -125,7 +127,7 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo:latest
+          image: mongo:6.0.2
           command: ["/bin/bash", "-c", "/scripts/mongo-init.sh; docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth"]
           ports:
             - containerPort: 27017

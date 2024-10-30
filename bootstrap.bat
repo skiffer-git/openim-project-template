@@ -9,7 +9,7 @@ IF %ERRORLEVEL% EQU 0 (
 
 go version >nul 2>&1
 IF NOT %ERRORLEVEL% EQU 0 (
-    echo Go is not installed. Please install Go and try again.
+    echo Go is notg. installed. Please install Go and try again.
     exit /b 1
 )
 
