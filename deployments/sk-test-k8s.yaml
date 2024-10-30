@@ -104,10 +104,12 @@ spec:
   selector:
     app: user-rpc-server
   ports:
-    - protocol: TCP
+    - name: http-10310  # 添加名称
+      protocol: TCP
       port: 10310
       targetPort: 10310
-    - protocol: TCP
+    - name: prometheus-20100  # 添加名称
+      protocol: TCP
       port: 20100
       targetPort: 20100
   type: ClusterIP
