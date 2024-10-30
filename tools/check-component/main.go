@@ -52,12 +52,12 @@ func initConfig(configDir string) (*config.Mongo, *config.Redis, *config.Discove
 
 		discovery = &config.Discovery{}
 	)
-	err := config.LoadConfig(filepath.Join(configDir, cmd.MongodbConfigFileName), cmd.ConfigEnvPrefixMap[cmd.MongodbConfigFileName], mongoConfig)
+	err := config.Load(configDir, cmd.MongodbConfigFileName, cmd.ConfigEnvPrefixMap[cmd.MongodbConfigFileName], mongoConfig)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	err = config.LoadConfig(filepath.Join(configDir, cmd.DiscoveryConfigFilename), cmd.ConfigEnvPrefixMap[cmd.DiscoveryConfigFilename], discovery)
+	err = config.Load(configDir, cmd.DiscoveryConfigFilename, cmd.ConfigEnvPrefixMap[cmd.DiscoveryConfigFilename], discovery)
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -73,6 +73,7 @@ func setUsernameHandler(c *gin.Context, grpcAddress string) {
 
 func getUsernamesHandler(c *gin.Context, grpcAddress string) {
 	// Call gRPC service to get users
+	grpcAddress = fmt.Sprintf("grpc-service:%s", grpcPort)
 	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to gRPC server"})

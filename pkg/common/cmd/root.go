@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
 	"github.com/openimsdk/tools/errs"
 	"github.com/openimsdk/tools/log"
@@ -102,15 +100,13 @@ func (r *RootCmd) initializeConfiguration(cmd *cobra.Command, opts *CmdOpts) err
 	// Load common configuration file
 	//opts.configMap[ShareFileName] = StructEnvPrefix{EnvPrefix: shareEnvPrefix, ConfigStruct: &r.share}
 	for configFileName, configStruct := range opts.configMap {
-		err := config.LoadConfig(filepath.Join(configDirectory, configFileName),
-			ConfigEnvPrefixMap[configFileName], configStruct)
+		err := config.Load(configDirectory, configFileName, ConfigEnvPrefixMap[configFileName], configStruct)
 		if err != nil {
 			return err
 		}
 	}
 	// Load common log configuration file
-	return config.LoadConfig(filepath.Join(configDirectory, LogConfigFileName),
-		ConfigEnvPrefixMap[LogConfigFileName], &r.log)
+	return config.Load(configDirectory, LogConfigFileName, ConfigEnvPrefixMap[LogConfigFileName], &r.log)
 }
 
 func (r *RootCmd) applyOptions(opts ...func(*CmdOpts)) *CmdOpts {
@@ -123,18 +119,20 @@ func (r *RootCmd) applyOptions(opts ...func(*CmdOpts)) *CmdOpts {
 }
 
 func (r *RootCmd) initializeLogger(cmdOpts *CmdOpts) error {
-	err := log.InitFromConfig(
-
+	err := log.InitLoggerFromConfig(
 		cmdOpts.loggerPrefixName,
 		r.processName,
+		"", "",
 		r.log.RemainLogLevel,
 		r.log.IsStdout,
 		r.log.IsJson,
 		r.log.StorageLocation,
 		r.log.RemainRotationCount,
 		r.log.RotationTime,
-		config.Version,
+		"1.0.0",
+		r.log.IsSimplify,
 	)
+
 	if err != nil {
 		return errs.Wrap(err)
 	}

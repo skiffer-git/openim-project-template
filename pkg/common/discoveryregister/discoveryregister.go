@@ -18,6 +18,7 @@ import (
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
 	"github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/discovery/etcd"
+	"github.com/openimsdk/tools/discovery/kubernetes"
 	"github.com/openimsdk/tools/errs"
 	"time"
 )
@@ -32,6 +33,8 @@ func NewDiscoveryRegister(discovery *config.Discovery) (discovery.SvcDiscoveryRe
 			etcd.WithDialTimeout(10*time.Second),
 			etcd.WithMaxCallSendMsgSize(20*1024*1024),
 			etcd.WithUsernameAndPassword(discovery.Etcd.Username, discovery.Etcd.Password))
+	case "kubernetes":
+		return kubernetes.NewK8sConnManager("default")
 	default:
 		return nil, errs.New("unsupported discovery type", "type", discovery.Enable).Wrap()
 	}
