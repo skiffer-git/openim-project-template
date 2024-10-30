@@ -16,7 +16,7 @@ spec:
       containers:
         - name: user-api-server-container
           image: user-api-server:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           env:
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
@@ -69,7 +69,7 @@ spec:
       containers:
         - name: user-rpc-server-container
           image: user-rpc-server:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           env:
             - name: MONGO_USER
               valueFrom:
