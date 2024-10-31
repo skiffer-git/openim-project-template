@@ -15,6 +15,7 @@
 package discoveryregister
 
 import (
+	"fmt"
 	"github.com/openimsdk/openim-project-template/pkg/common/config"
 	"github.com/openimsdk/tools/discovery"
 	"github.com/openimsdk/tools/discovery/etcd"
@@ -25,6 +26,9 @@ import (
 
 // NewDiscoveryRegister creates a new service discovery and registry client based on the provided environment type.
 func NewDiscoveryRegister(discovery *config.Discovery) (discovery.SvcDiscoveryRegistry, error) {
+
+	fmt.Printf("discovery.Enable %s\n", discovery.Enable)
+
 	switch discovery.Enable {
 	case "etcd":
 		return etcd.NewSvcDiscoveryRegistry(

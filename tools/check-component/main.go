@@ -101,7 +101,9 @@ func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *
 		},
 	}
 	if discovery.Enable == "etcd" {
+		fmt.Printf("discovery.Enable == etcd\n")
 		checks["Etcd"] = func(ctx context.Context) error {
+
 			return CheckEtcd(ctx, &discovery.Etcd)
 		}
 	}
