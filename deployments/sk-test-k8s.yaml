@@ -273,6 +273,7 @@ data:
   mongo-init.sh: |
     echo "Listing files before running mongosh..."
     ls -al
+    sleep 10
     
     mongosh <<EOF
     var maxRetries = 300;
