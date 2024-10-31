@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	return
 	vMem, err := mem.VirtualMemory()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get virtual memory info: %v\n", err)
