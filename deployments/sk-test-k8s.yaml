@@ -276,11 +276,7 @@ data:
     rpcRegisterName:
       user: user-rpc-service:10310
   mongo-init.sh: |
-    echo "Listing files before running mongosh..."
-    sleep 10
-    ls -al
-   
-    
+    echo "before running mongosh..."
     mongosh <<EOF
     var maxRetries = 300;
     var connected = false;
@@ -340,9 +336,7 @@ data:
 
     print('Script execution completed.');
     EOF
-
-    echo "Listing files end running mongosh..."
-    ls -al
+    echo "mongosh completed..."
 ---
 apiVersion: v1
 kind: Secret
