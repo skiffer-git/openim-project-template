@@ -16,6 +16,7 @@ spec:
       containers:
         - name: user-api-server-container
           image: user-api-server:latest
+          imagePullPolicy: Never
           env:
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
@@ -39,10 +40,12 @@ spec:
   selector:
     app: user-api-server
   ports:
-    - protocol: TCP
+    - name: http-10302
+      protocol: TCP
       port: 10302
       targetPort: 10302
-    - protocol: TCP
+    - name: prometheus-20113
+      protocol: TCP
       port: 20113
       targetPort: 20113
   type: ClusterIP
@@ -66,6 +69,7 @@ spec:
       containers:
         - name: user-rpc-server-container
           image: user-rpc-server:latest
+          imagePullPolicy: Never
           env:
             - name: MONGO_USER
               valueFrom:
@@ -87,11 +91,10 @@ spec:
             - containerPort: 10310
             - containerPort: 20100
       volumes:
-      - name: openim-config
-        configMap:
-          name: openim-config
+        - name: openim-config
+          configMap:
+            name: openim-config
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -100,10 +103,12 @@ spec:
   selector:
     app: user-rpc-server
   ports:
-    - protocol: TCP
+    - name: http-10310
+      protocol: TCP
       port: 10310
       targetPort: 10310
-    - protocol: TCP
+    - name: prometheus-20100
+      protocol: TCP
       port: 20100
       targetPort: 20100
   type: ClusterIP
@@ -125,7 +130,7 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo:latest
+          image: mongo:6.0.2
           command: ["/bin/bash", "-c", "/scripts/mongo-init.sh; docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth"]
           ports:
             - containerPort: 27017
@@ -155,12 +160,18 @@ spec:
                 secretKeyRef:
                   name: mongo-secret
                   key: mongo_openim_password
-            volumeMounts:
-              - name: script-volume
-                mountPath: /scripts
-                readOnly: true
-              - name: mongo-storage
-                mountPath: /data/db
+          volumeMounts:
+            - name: script-volume
+              mountPath: /scripts
+              readOnly: true
+            - name: mongo-storage
+              mountPath: /data/db
+      volumes:
+        - name: script-volume
+          configMap:
+            name: openim-config
+        - name: mongo-storage
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -170,7 +181,8 @@ spec:
   selector:
     app: mongo
   ports:
-    - protocol: TCP
+    - name: mongodb-port
+      protocol: TCP
       port: 27017
       targetPort: 27017
   type: ClusterIP
@@ -186,7 +198,7 @@ data:
     enable: "kubernetes"
   log.yml: |
     # Log storage path, default is acceptable, change to a full path if modification is needed
-    storageLocation: 
+    storageLocation:
     # Log rotation period (in hours), default is acceptable
     rotationTime: 24
     # Number of log files to retain, default is acceptable
@@ -304,7 +316,6 @@ data:
 
     print('Script execution completed.');
   EOF
-
 
 
 ---
