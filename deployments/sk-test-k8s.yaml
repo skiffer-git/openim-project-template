@@ -221,7 +221,7 @@ data:
     # List of MongoDB server addresses
     address: [ mongo-service:27017 ]
     # Name of the database
-    database: test-k8s
+    database: openim_v3
     # Username for database authentication
     username: openIM
     # Password for database authentication
