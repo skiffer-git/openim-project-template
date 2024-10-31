@@ -180,14 +180,17 @@ spec:
               mountPath: /data/db
             - name: script-volume
               mountPath: /scripts
+
       volumes:
         - name: script-volume
           configMap:
             name: openim-config
-        - name: temp-script
-          emptyDir: {}
+            items:
+              - key: mongo-init.sh
+                path: mongo-init.sh
+                mode: 0755
         - name: mongo-storage
-          emptyDir: {}
+          emptyDir: { }
 ---
 apiVersion: v1
 kind: Service
