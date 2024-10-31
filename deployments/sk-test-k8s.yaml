@@ -336,8 +336,8 @@ data:
     print('Script execution completed.');
     EOF
 
-  echo "Listing files end running mongosh..."
-  ls -al
+    echo "Listing files end running mongosh..."
+    ls -al
 ---
 apiVersion: v1
 kind: Secret
