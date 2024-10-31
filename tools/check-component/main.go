@@ -107,7 +107,7 @@ func performChecks(ctx context.Context, mongoConfig *config.Mongo, redisConfig *
 			return CheckEtcd(ctx, &discovery.Etcd)
 		}
 	}
-
+	fmt.Printf("discovery.Enable == %s\n", discovery.Enable)
 	for i := 0; i < maxRetry; i++ {
 		allSuccess := true
 		for name, check := range checks {
