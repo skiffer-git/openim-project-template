@@ -167,7 +167,6 @@ spec:
           volumeMounts:
             - name: script-volume
               mountPath: /scripts
-              readOnly: true
             - name: mongo-storage
               mountPath: /data/db
       volumes:
