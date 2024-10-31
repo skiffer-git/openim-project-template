@@ -132,15 +132,15 @@ spec:
       labels:
         app: mongo
     spec:
-      initContainers:
-        - name: copy-scripts
-          image: busybox
-          command: ["sh", "-c", "cp /scripts/mongo-init.sh /tmp/mongo-init.sh && chmod +x /tmp/mongo-init.sh"]
-          volumeMounts:
-            - name: script-volume
-              mountPath: /scripts
-            - name: temp-script
-              mountPath: /tmp
+      #initContainers:
+       # - name: copy-scripts
+        #  image: busybox
+          #command: ["sh", "-c", "cp /scripts/mongo-init.sh /tmp/mongo-init.sh && chmod +x /tmp/mongo-init.sh"]
+          #volumeMounts:
+           # - name: script-volume
+            #  mountPath: /scripts
+            #- name: temp-script
+             # mountPath: /tmp
       containers:
         - name: mongo
           image: mongo:6.0.2
@@ -175,9 +175,11 @@ spec:
                   key: mongo_openim_password
           volumeMounts:
             - name: temp-script
-              mountPath: /tmp
+              mountPath: /scripts
             - name: mongo-storage
               mountPath: /data/db
+            - name: script-volume
+              mountPath: /scripts
       volumes:
         - name: script-volume
           configMap:
