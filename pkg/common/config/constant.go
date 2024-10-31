@@ -1,7 +1,7 @@
 package config
 
 const (
-	MountConfigFilePath     = "OPENIM_CONFIG"
+	MountConfigFilePath     = "CONFIG_PATH"
 	DeploymentType          = "DEPLOYMENT_TYPE"
 	KUBERNETES              = "kubernetes"
 	MongoInitdbRootUsername = "MONGO_INITDB_ROOT_USERNAME"

@@ -20,8 +20,10 @@ spec:
           env:
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
+            - name: CONFIG_PATH
+              value: "/config"
           volumeMounts:
-            - name: OPENIM_CONFIG
+            - name: openim-config
               mountPath: "/config"
               readOnly: true
           ports:
@@ -83,8 +85,10 @@ spec:
                   key: mongo_openim_password
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
+            - name: CONFIG_PATH
+              value: "/config"
           volumeMounts:
-            - name: OPENIM_CONFIG
+            - name: openim-config
               mountPath: "/config"
               readOnly: true
           ports:
