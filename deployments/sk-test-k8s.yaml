@@ -272,8 +272,9 @@ data:
       user: user-rpc-service:10310
   mongo-init.sh: |
     echo "Listing files before running mongosh..."
-    ls -al
     sleep 10
+    ls -al
+   
     
     mongosh <<EOF
     var maxRetries = 300;
