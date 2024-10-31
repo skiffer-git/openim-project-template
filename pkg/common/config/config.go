@@ -16,8 +16,6 @@ package config
 
 import (
 	_ "embed"
-	"os"
-
 	"github.com/openimsdk/tools/db/mongoutil"
 	"github.com/openimsdk/tools/db/redisutil"
 )
@@ -104,19 +102,6 @@ type Etcd struct {
 }
 
 func (m *Mongo) Build() *mongoutil.Config {
-	if os.Getenv(DeploymentType) == KUBERNETES {
-		mongoUsername := os.Getenv(MongoInitdbRootUsername)
-		mongoPassword := os.Getenv(MongoInitdbRootPassword)
-		return &mongoutil.Config{
-			Uri:         m.URI,
-			Address:     m.Address,
-			Database:    m.Database,
-			Username:    mongoUsername,
-			Password:    mongoPassword,
-			MaxPoolSize: m.MaxPoolSize,
-			MaxRetry:    m.MaxRetry,
-		}
-	}
 	return &mongoutil.Config{
 		Uri:         m.URI,
 		Address:     m.Address,
