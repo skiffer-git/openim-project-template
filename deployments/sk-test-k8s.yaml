@@ -254,8 +254,14 @@ data:
     var openimUsername = '$MONGO_OPENIM_USERNAME';
     var openimPassword = '$MONGO_OPENIM_PASSWORD';
 
+    print('Starting MongoDB connection script...');
+    print('Root username: ' + rootUsername);
+    print('Target database: ' + dbName);
+    print('OpenIM user to create: ' + openimUsername);
+
     while (!connected && maxRetries > 0) {
         try {
+            print('Attempting to connect to MongoDB. Remaining retries: ' + maxRetries);
             db = connect('mongodb://127.0.0.1:27017/admin');
             var authResult = db.auth(rootUsername, rootPassword);
             if (authResult) {
@@ -267,12 +273,14 @@ data:
             }
         } catch (e) {
             maxRetries--;
-            print('Connection failed, retrying... Remaining attempts: ' + maxRetries);
+            print('Connection failed due to error: ' + e);
+            print('Retrying... Remaining attempts: ' + maxRetries);
             sleep(1000); // Sleep for 1 second
         }
     }
 
     if (connected) {
+        print('Connected to MongoDB successfully. Proceeding to create user...');
         db = db.getSiblingDB(dbName);
         var createUserResult = db.createUser({
             user: openimUsername,
@@ -293,7 +301,10 @@ data:
         print('Failed to connect to MongoDB after 300 retries.');
         quit(1);
     }
-    EOF
+
+    print('Script execution completed.');
+  EOF
+
 
 
 ---
