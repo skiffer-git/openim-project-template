@@ -13,7 +13,7 @@ func Load(configDirectory string, configFileName string, envPrefix string, confi
 	if os.Getenv(DeploymentType) == KUBERNETES {
 		mountPath := os.Getenv(MountConfigFilePath)
 		if mountPath == "" {
-			return errs.ErrArgs.WrapMsg("MountConfigFilePath env is empty")
+			return errs.ErrArgs.WrapMsg(MountConfigFilePath + " env is empty")
 		}
 		return loadConfigK8s(mountPath, configFileName, config)
 	}
