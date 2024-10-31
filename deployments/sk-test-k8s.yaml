@@ -144,7 +144,7 @@ spec:
       containers:
         - name: mongo
           image: mongo:6.0.2
-          command: [ "/bin/bash", "-c", "docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth & /tmp/mongo-init.sh; wait" ]
+          command: [ "/bin/bash", "-c", "docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth & /scripts/mongo-init.sh; wait" ]
           ports:
             - containerPort: 27017
           env:
