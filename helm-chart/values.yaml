@@ -33,6 +33,12 @@ rpc:
 
 ## MongoDB 配置
 mongodb:
+  auth:
+    enabled: true
+    rootPassword: openIM1234
+    username: openIM1
+    password: openIM1234
+    database: admin
   fullnameOverride: mongodb-service
   replicaSet:
     enabled: true
