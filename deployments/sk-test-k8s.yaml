@@ -77,12 +77,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
-                  key: mongo_openim_username
+                  key: mongo_initdb_root_username
             - name: MONGO_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mongo-secret
-                  key: mongo_openim_password
+                  key: mongo_initdb_root_password
             - name: DEPLOYMENT_TYPE
               value: "kubernetes"
             - name: CONFIG_PATH
