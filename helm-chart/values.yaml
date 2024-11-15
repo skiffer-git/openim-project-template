@@ -17,14 +17,14 @@ api:
 
 rpc:
   image:
-    repository: user-rpc-server
-    tag: latest
-    pullPolicy: Never
+    repository: "user-rpc-server"
+    tag: "latest"
+    pullPolicy: "Never"
   ports:
-    - containerPort: 10310
-    - containerPort: 20100
+    - 10310  # 容器的端口
+    - 20100  # 容器的端口
   config:
-    enableKubernetes: "kubernetes"
+    enableKubernetes: "kubernetes"  # 部署类型，确保为字符串
   volumes:
     - name: openim-config
       configMap:
