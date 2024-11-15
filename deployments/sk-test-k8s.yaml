@@ -154,9 +154,6 @@ spec:
          #     mountPath: /scripts
             - name: mongo-storage
               mountPath: /data/db
-            - name: script-volume
-              mountPath: /scripts
-
       volumes:
         - name: mongo-storage
           emptyDir: { }
