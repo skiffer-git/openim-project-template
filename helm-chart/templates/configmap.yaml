@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openim-config
+data:
+  discovery.yml: |
+    enable: "kubernetes"
+  log.yml: |
+    storageLocation: /var/log/openim
+    rotationTime: 24
+    remainRotationCount: 2
+    remainLogLevel: 6
+    isStdout: true
+    isJson: false
+    isSimplify: true
+  mongodb.yml: |
+    uri: ''
+    address: [ mongo-service:27017 ]
+    database: admin
+    username: openIM
+    password: openIM123
+    maxPoolSize: 100
+    maxRetry: 10
+  openim-api.yml: |
+    secret: openIM123
+    api:
+      listenIP: 0.0.0.0
+      ports: [ 10302 ]
+    prometheus:
+      enable: true
+      ports: [ 20113 ]
+      grafanaURL: http://127.0.0.1:13000/
+  openim-rpc-user.yml: |
+    rpc:
+      listenIP: 0.0.0.0
+      ports: [ 10310 ]
+    prometheus:
+      enable: true
+      ports: [ 20100 ]
+  share.yml: |
+    rpcRegisterName:
+      user: user-rpc-service:10310

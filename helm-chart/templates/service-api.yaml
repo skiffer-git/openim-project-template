@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-api-service
+spec:
+  selector:
+    app: user-api-server
+  ports:
+    - name: http-10302
+      protocol: TCP
+      port: 10302
+      targetPort: 10302
+    - name: prometheus-20113
+      protocol: TCP
+      port: 20113
+      targetPort: 20113
+  type: ClusterIP

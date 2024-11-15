@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-api-server
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: user-api-server
+  template:
+    metadata:
+      labels:
+        app: user-api-server
+    spec:
+      containers:
+        - name: user-api-server-container
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          env:
+            - name: DEPLOYMENT_TYPE
+              value: "{{ .Values.api.config.enableKubernetes }}"
+            - name: CONFIG_PATH
+              value: "/config"
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            {{- range .Values.api.ports }}
+            - containerPort: {{ . }}
+            {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: openim-config

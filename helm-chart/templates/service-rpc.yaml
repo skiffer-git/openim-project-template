@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-rpc-service
+spec:
+  selector:
+    app: user-rpc-server
+  ports:
+    - name: http-10310
+      protocol: TCP
+      port: 10310
+      targetPort: 10310
+    - name: prometheus-20100
+      protocol: TCP
+      port: 20100
+      targetPort: 20100
+  type: ClusterIP

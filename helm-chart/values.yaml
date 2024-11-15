@@ -1,0 +1,52 @@
+replicaCount: 1
+
+api:
+  image:
+    repository: user-api-server
+    tag: latest
+    pullPolicy: Never
+  ports:
+    - containerPort: 10302
+    - containerPort: 20113
+  config:
+    enableKubernetes: "kubernetes"
+  volumes:
+    - name: openim-config
+      configMap:
+        name: openim-config
+
+rpc:
+  image:
+    repository: user-rpc-server
+    tag: latest
+    pullPolicy: Never
+  ports:
+    - containerPort: 10310
+    - containerPort: 20100
+  config:
+    enableKubernetes: "kubernetes"
+  volumes:
+    - name: openim-config
+      configMap:
+        name: openim-config
+
+mongo:
+  image:
+    repository: mongo
+    tag: "6.0.2"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  storage:
+    size: 1Gi
+  secretName: mongo-secret
+  env:
+    - name: MONGO_INITDB_ROOT_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: mongo-secret
+          key: mongo_initdb_root_username
+    - name: MONGO_INITDB_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: mongo-secret
+          key: mongo_initdb_root_password

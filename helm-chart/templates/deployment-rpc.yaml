@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-rpc-server
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: user-rpc-server
+  template:
+    metadata:
+      labels:
+        app: user-rpc-server
+    spec:
+      containers:
+        - name: user-rpc-server-container
+          image: "{{ .Values.rpc.image.repository }}:{{ .Values.rpc.image.tag }}"
+          imagePullPolicy: {{ .Values.rpc.image.pullPolicy }}
+          env:
+            - name: DEPLOYMENT_TYPE
+              value: "{{ .Values.rpc.config.enableKubernetes }}"
+            - name: CONFIG_PATH
+              value: "/config"
+          volumeMounts:
+            - name: openim-config
+              mountPath: "/config"
+              readOnly: true
+          ports:
+            {{- range .Values.rpc.ports }}
+            - containerPort: {{ . }}
+            {{- end }}
+      volumes:
+        - name: openim-config
+          configMap:
+            name: openim-config
