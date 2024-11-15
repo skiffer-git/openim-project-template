@@ -158,13 +158,6 @@ spec:
               mountPath: /scripts
 
       volumes:
-        - name: script-volume
-          configMap:
-            name: openim-config
-            items:
-              - key: mongo-init.sh
-                path: mongo-init.sh
-                mode: 0755
         - name: mongo-storage
           emptyDir: { }
 ---
