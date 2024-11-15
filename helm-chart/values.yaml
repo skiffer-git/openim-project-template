@@ -30,23 +30,16 @@ rpc:
       configMap:
         name: openim-config
 
-mongo:
-  image:
-    repository: mongo
-    tag: "6.0.2"
-    pullPolicy: IfNotPresent
-  replicaCount: 1
-  storage:
-    size: 1Gi
-  secretName: mongo-secret
-  env:
-    - name: MONGO_INITDB_ROOT_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: mongo-secret
-          key: mongo_initdb_root_username
-    - name: MONGO_INITDB_ROOT_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: mongo-secret
-          key: mongo_initdb_root_password
+
+## MongoDB 配置
+mongodb:
+  replicaSet:
+    enabled: true
+    replicas: 1  # 设置为 1 代表单节点模式，如果需要副本集，增加副本数
+
+  persistence:
+    enabled: true
+    size: 1Gi  # 设置存储大小为 1Gi
+
+  # 如果使用现有 Secret，可以指定 existingSecret
+  existingSecret: "mongo-secret"
