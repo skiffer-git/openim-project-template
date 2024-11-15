@@ -248,7 +248,7 @@ metadata:
   name: mongo-secret
 type: Opaque
 data:
-  mongo_initdb_root_username: b3Blbklt  # base64 for "openIM"
-  mongo_initdb_root_password: b3BlbklNMjM=  # base64 for "openIM123"
+  mongo_initdb_root_username: b3BlbklN  # base64 for "openIM"
+  mongo_initdb_root_password: b3BlbklNMTIz  # base64 for "openIM123"
 
 
