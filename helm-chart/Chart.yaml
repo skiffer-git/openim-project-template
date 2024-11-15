@@ -5,5 +5,5 @@ version: 0.1.0
 appVersion: "1.0"
 dependencies:
   - name: mongodb
-    version: "8.0.3"  # 选择适合的 MongoDB chart 版本
+    version: "16.2.2"  # 选择适合的 MongoDB chart 版本
     repository: "https://charts.bitnami.com/bitnami"
