@@ -132,19 +132,10 @@ spec:
       labels:
         app: mongo
     spec:
-      #initContainers:
-       # - name: copy-scripts
-        #  image: busybox
-          #command: ["sh", "-c", "cp /scripts/mongo-init.sh /tmp/mongo-init.sh && chmod +x /tmp/mongo-init.sh"]
-          #volumeMounts:
-           # - name: script-volume
-            #  mountPath: /scripts
-            #- name: temp-script
-             # mountPath: /tmp
       containers:
         - name: mongo
           image: mongo:6.0.2
-          command: [ "/bin/bash", "-c", "docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth & /scripts/mongo-init.sh; wait" ]
+          command: [ "/bin/bash", "-c", "docker-entrypoint.sh mongod --wiredTigerCacheSizeGB 1 --auth" ]
           ports:
             - containerPort: 27017
           env:
@@ -158,21 +149,6 @@ spec:
                 secretKeyRef:
                   name: mongo-secret
                   key: mongo_initdb_root_password
-            - name: MONGO_INITDB_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: mongo-secret
-                  key: mongo_initdb_database
-            - name: MONGO_OPENIM_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mongo-secret
-                  key: mongo_openim_username
-            - name: MONGO_OPENIM_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongo-secret
-                  key: mongo_openim_password
           volumeMounts:
         #    - name: temp-script
          #     mountPath: /scripts
@@ -236,7 +212,7 @@ data:
     # List of MongoDB server addresses
     address: [ mongo-service:27017 ]
     # Name of the database
-    database: openim_v3
+    database: admin
     # Username for database authentication
     username: openIM
     # Password for database authentication
@@ -275,68 +251,6 @@ data:
   share.yml: |
     rpcRegisterName:
       user: user-rpc-service:10310
-  mongo-init.sh: |
-    echo "before running mongosh..."
-    mongosh <<EOF
-    var maxRetries = 300;
-    var connected = false;
-    var rootUsername = '$MONGO_INITDB_ROOT_USERNAME';
-    var rootPassword = '$MONGO_INITDB_ROOT_PASSWORD';
-    var dbName = '$MONGO_INITDB_DATABASE';
-    var openimUsername = '$MONGO_OPENIM_USERNAME';
-    var openimPassword = '$MONGO_OPENIM_PASSWORD';
-
-    print('Starting MongoDB connection script...');
-    print('Root username: ' + rootUsername);
-    print('Target database: ' + dbName);
-    print('OpenIM user to create: ' + openimUsername);
-
-    while (!connected && maxRetries > 0) {
-        try {
-            print('Attempting to connect to MongoDB. Remaining retries: ' + maxRetries);
-            db = connect('mongodb://127.0.0.1:27017/admin');
-            var authResult = db.auth(rootUsername, rootPassword);
-            if (authResult) {
-                print('Authentication successful for root user: ' + rootUsername);
-                connected = true;
-            } else {
-                print('Authentication failed for root user: ' + rootUsername + ' with password: ' + rootPassword);
-                quit(1);
-            }
-        } catch (e) {
-            maxRetries--;
-            print('Connection failed due to error: ' + e);
-            print('Retrying... Remaining attempts: ' + maxRetries);
-            sleep(1000); // Sleep for 1 second
-        }
-    }
-
-    if (connected) {
-        print('Connected to MongoDB successfully. Proceeding to create user...');
-        db = db.getSiblingDB(dbName);
-        var createUserResult = db.createUser({
-            user: openimUsername,
-            pwd: openimPassword,
-            roles: [{
-                role: 'readWrite',
-                db: dbName
-            }]
-        });
-
-        if (createUserResult.ok == 1) {
-            print('User creation successful. User: ' + openimUsername + ', Database: ' + dbName);
-        } else {
-            print('User creation failed for user: ' + openimUsername + ' in database: ' + dbName);
-            quit(1);
-        }
-    } else {
-        print('Failed to connect to MongoDB after 300 retries.');
-        quit(1);
-    }
-
-    print('Script execution completed.');
-    EOF
-    echo "mongosh completed..."
 ---
 apiVersion: v1
 kind: Secret
@@ -344,8 +258,7 @@ metadata:
   name: mongo-secret
 type: Opaque
 data:
-  mongo_initdb_root_username: cm9vdA==  # base64 for "root"
-  mongo_initdb_root_password: b3BlbklNMTIz  # base64 for "openIM123"
-  mongo_initdb_database: b3BlbmltX3Yz  # base64 for "openim_v3"
-  mongo_openim_username: b3BlbklN  # base64 for "openIM"
-  mongo_openim_password: b3BlbklNMTIz  # base64 for "openIM123"
+  mongo_initdb_root_username: b3Blbklt  # base64 for "openIM"
+  mongo_initdb_root_password: b3BlbklNMjM=  # base64 for "openIM123"
+
+
