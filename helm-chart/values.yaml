@@ -6,8 +6,8 @@ api:
     tag: latest
     pullPolicy: Never
   ports:
-    - containerPort: 10302
-    - containerPort: 20113
+    - 10302
+    - 20113
   config:
     enableKubernetes: "kubernetes"
   volumes:
