@@ -15,7 +15,7 @@ data:
     isSimplify: true
   mongodb.yml: |
     uri: ''
-    address: [ {{ .Values.mongodb.serviceName }}:{{ .Values.mongodb.port }} ]
+    address: [ mongodb-service:27017 ]
     database: admin
     username: openIM
     password: openIM123

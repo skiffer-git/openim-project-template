@@ -33,6 +33,7 @@ rpc:
 
 ## MongoDB 配置
 mongodb:
+  fullnameOverride: mongodb-service
   replicaSet:
     enabled: true
     replicas: 1  # 设置为 1 代表单节点模式，如果需要副本集，增加副本数
